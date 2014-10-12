@@ -7,7 +7,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 
-public class GoogleCalendarAPI 
+public class GoogleCalendarUtils 
 {
 	private static String calanderURL = "";
 	private static String calanderEventURL = "";
@@ -32,7 +32,7 @@ public class GoogleCalendarAPI
 		}
 	}
 
-	public GoogleCalendarAPI()
+	public GoogleCalendarUtils()
 	{
 		Cursor userCursor;
 		userCursor = LibApplication.getAppContext().getContentResolver().query(Uri.parse(calanderURL), null, null, null, null);

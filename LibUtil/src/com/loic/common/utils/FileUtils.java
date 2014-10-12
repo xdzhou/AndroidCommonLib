@@ -1,5 +1,7 @@
 package com.loic.common.utils;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,40 +15,16 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * File Utils
- * <ul>
- * Read or write file
- * <li>{@link #readFile(String)} read file</li>
- * <li>{@link #readFileToList(String)} read file to string list</li>
- * <li>{@link #writeFile(String, String, boolean)} write file from String</li>
- * <li>{@link #writeFile(String, String)} write file from String</li>
- * <li>{@link #writeFile(String, List, boolean)} write file from String List</li>
- * <li>{@link #writeFile(String, List)} write file from String List</li>
- * <li>{@link #writeFile(String, InputStream)} write file</li>
- * <li>{@link #writeFile(String, InputStream, boolean)} write file</li>
- * <li>{@link #writeFile(File, InputStream)} write file</li>
- * <li>{@link #writeFile(File, InputStream, boolean)} write file</li>
- * </ul>
- * <ul>
- * Operate file
- * <li>{@link #copyFile(String, String)}</li>
- * <li>{@link #getFileExtension(String)}</li>
- * <li>{@link #getFileName(String)}</li>
- * <li>{@link #getFileNameWithoutExtension(String)}</li>
- * <li>{@link #getFileSize(String)}</li>
- * <li>{@link #deleteFile(String)}</li>
- * <li>{@link #isFileExist(String)}</li>
- * <li>{@link #isFolderExist(String)}</li>
- * <li>{@link #makeFolders(String)}</li>
- * <li>{@link #makeDirs(String)}</li>
- * </ul>
- * 
- * @author <a href="http://www.trinea.cn" target="_blank">Trinea</a> 2012-5-12
- */
+import org.xeustechnologies.jtar.TarEntry;
+import org.xeustechnologies.jtar.TarInputStream;
+import org.xeustechnologies.jtar.TarOutputStream;
+
+import android.util.Log;
+
 public class FileUtils 
 {
     public final static String FILE_EXTENSION_SEPARATOR = ".";
+    private static final String TAG = FileUtils.class.getSimpleName();
 
     /**
      * read file
@@ -545,5 +523,101 @@ public class FileUtils
 
         File file = new File(path);
         return (file.exists() && file.isFile() ? file.length() : -1);
+    }
+    
+    /**
+     * Untar the contents of a tar file into the given directory, ignoring the
+     * relative pathname in the tar file, and delete the tar file.
+     * 
+     * Uses jtar: http://code.google.com/p/jtar/
+     * 
+     * @param tarFile The tar file to be untarred
+     * @param destinationDir The directory to untar into
+     * @throws IOException
+     */
+    public static boolean unTarFile(String tarFile, String destFolder)
+    {
+    	boolean retVal = false;
+    	if(!tarFile.isEmpty() && isFileExist(tarFile) && !destFolder.isEmpty())
+    	{
+    		makeDirs(destFolder);
+			try {
+				// Create a TarInputStream
+				TarInputStream tis = new TarInputStream(new BufferedInputStream(new FileInputStream(tarFile)));
+				TarEntry entry;
+				while((entry = tis.getNextEntry()) != null) 
+				{
+					int count;
+					byte data[] = new byte[2048];
+					String pathName = entry.getName();
+					Log.d(TAG, "entry.getName() = "+pathName);
+				    String fileName = pathName.substring(pathName.lastIndexOf('/'), pathName.length());
+					FileOutputStream fos = new FileOutputStream(destFolder + fileName);
+					BufferedOutputStream dest = new BufferedOutputStream(fos);
+			
+					while((count = tis.read(data)) != -1) {
+						dest.write(data, 0, count);
+					}
+			
+					dest.flush();
+					dest.close();
+				}
+				tis.close();
+				deleteFile(tarFile);
+				retVal = true;
+			} catch (FileNotFoundException e) {
+				Log.e(TAG, e.getMessage());
+				e.printStackTrace();
+			} catch (IOException e) {
+				Log.e(TAG, e.getMessage());
+				e.printStackTrace();
+			}
+    	}
+    	return retVal;
+    }
+    
+    public static boolean tarFile(List<String> filesPathList, String destFilePath)
+    {
+    	boolean retVal = false;
+    	if(filesPathList != null && filesPathList.size() > 0 && !destFilePath.isEmpty())
+    	{
+    		//check fils existence
+    		for(String file : filesPathList)
+    		{
+    			if(!isFileExist(file))
+    				return false;
+    		}
+    		//create folder
+    		makeDirs(destFilePath);  		
+     	   	try {
+     	   		// Output file stream
+				FileOutputStream dest = new FileOutputStream(destFilePath);
+				// Create a TarOutputStream
+		    	TarOutputStream out = new TarOutputStream( new BufferedOutputStream(dest));
+		    	for(String file : filesPathList)
+		    	{
+		    		File fileToTar = new File(file);
+		    	    out.putNextEntry(new TarEntry(fileToTar, fileToTar.getName()));
+		    	    BufferedInputStream origin = new BufferedInputStream(new FileInputStream( fileToTar ));
+		    	    int count;
+		    	    byte data[] = new byte[2048];
+		    	    while((count = origin.read(data)) != -1) 
+		    	    {
+		    	         out.write(data, 0, count);
+		    	    }
+		    	    out.flush();
+		    	    origin.close();
+		    	    out.close();
+		    	    retVal = true;
+		    	}
+			} catch (FileNotFoundException e) {
+				Log.e(TAG, e.getMessage());
+				e.printStackTrace();
+			} catch (IOException e) {
+				Log.e(TAG, e.getMessage());
+				e.printStackTrace();
+			}
+    	}
+    	return retVal;
     }
 }

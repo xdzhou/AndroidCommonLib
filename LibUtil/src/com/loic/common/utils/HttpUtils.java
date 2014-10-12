@@ -1,12 +1,15 @@
 package com.loic.common.utils;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
@@ -16,37 +19,12 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.apache.http.NameValuePair;
-/**
- * HttpUtils
- * <ul>
- * <strong>Http get, you can also use {@link HttpCache}</strong>
- * <li>{@link #httpGet(HttpRequest)} http get synchronous</li>
- * <li>{@link #httpGet(String)} http get synchronous</li>
- * <li>{@link #httpGetString(String)} http get synchronous, response is String</li>
- * <li>{@link #httpGet(HttpRequest, HttpListener)} http get asynchronous</li>
- * <li>{@link #httpGet(String, HttpListener)} http get asynchronous</li>
- * </ul>
- * <ul>
- * <strong>Http post</strong>
- * <li>{@link #httpPost(HttpRequest)}</li>
- * <li>{@link #httpPost(String)}</li>
- * <li>{@link #httpPostString(String)}</li>
- * <li>{@link #httpPostString(String, Map)}</li>
- * </ul>
- * <ul>
- * <strong>Http params</strong>
- * <li>{@link #getUrlWithParas(String, Map)}</li>
- * <li>{@link #getUrlWithValueEncodeParas(String, Map)}</li>
- * <li>{@link #joinParas(Map)}</li>
- * <li>{@link #joinParasWithEncodedValue(Map)}</li>
- * <li>{@link #appendParaToUrl(String, String, String)}</li>
- * <li>{@link #parseGmtTime(String)}</li>
- * </ul>
- * 
- * @author <a href="http://www.trinea.cn" target="_blank">Trinea</a> 2013-5-12
- */
+
+import android.util.Log;
+
 public class HttpUtils 
 {
+	private static final String TAG = HttpUtils.class.getSimpleName();
     /** url and para separator **/
     public static final String URL_AND_PARA_SEPARATOR = "?";
     /** parameters separator **/
@@ -125,6 +103,47 @@ public class HttpUtils
     		} catch (IOException e) {
     			throw new FailException(e.getMessage());
     		} finally {
+                client.getConnectionManager().shutdown();
+            }
+        }
+        return retVal;
+    }
+    
+    public static boolean httpDownloadFile(String url, String fileSavePath)
+    {
+    	boolean retVal = false;
+        if(!url.isEmpty() && !fileSavePath.isEmpty())
+        {
+        	HttpClient client = new DefaultHttpClient();
+            HttpGet httpGet = new HttpGet(url);
+            try {
+                HttpResponse response = client.execute(httpGet);
+                int status = response.getStatusLine().getStatusCode();
+                if (status == 200) 
+                {
+                    HttpEntity entity = response.getEntity();
+                    InputStream instream = entity.getContent();
+                    BufferedInputStream bis = new BufferedInputStream(instream);
+                    String fileName = FileUtils.getFileName(url);
+                    BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(new File(fileSavePath, fileName)));
+                    int inByte;
+                    while ((inByte = bis.read()) != -1 ) {
+                        bos.write(inByte);
+                    }
+                    bis.close();
+                    bos.close();
+                    retVal = true;
+                } 
+                else
+                	Log.e(TAG, "HttpResponse status NOT 200 , status = "+status);
+                httpGet.abort();
+            } 
+            catch (IOException e) 
+            {
+            	Log.e(TAG, e.getMessage());
+    		}
+            finally 
+            {
                 client.getConnectionManager().shutdown();
             }
         }
