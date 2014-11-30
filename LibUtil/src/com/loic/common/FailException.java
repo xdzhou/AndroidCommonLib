@@ -1,4 +1,4 @@
-package com.loic.common.utils;
+package com.loic.common;
 
 public class FailException extends Exception 
 {

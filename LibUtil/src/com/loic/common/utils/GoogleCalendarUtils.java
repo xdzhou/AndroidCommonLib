@@ -1,5 +1,7 @@
 package com.loic.common.utils;
 
+import com.loic.common.LibApplication;
+
 import android.annotation.SuppressLint;
 import android.content.ContentUris;
 import android.content.ContentValues;

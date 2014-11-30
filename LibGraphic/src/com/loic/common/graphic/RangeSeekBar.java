@@ -28,8 +28,7 @@ import android.widget.ImageView;
  * @param <T>
  *            The Number type of the range values. One of Long, Double, Integer, Float, Short, Byte or BigDecimal.
  */
-public class RangeSeekBar<T extends Number> extends ImageView 
-{
+public class RangeSeekBar<T extends Number> extends ImageView {
         private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private final Bitmap thumbImage = BitmapFactory.decodeResource(getResources(), R.drawable.seek_thumb_normal);
         private final Bitmap thumbPressedImage = BitmapFactory.decodeResource(getResources(), R.drawable.seek_thumb_pressed);

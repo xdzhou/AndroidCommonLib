@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -13,22 +12,24 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-public class MultiFragmentController extends Fragment
+public class MultiFragmentManager extends GcFragment
 {
-	private static final String TAG = MultiFragmentController.class.getSimpleName();
+	private static final String TAG = MultiFragmentManager.class.getSimpleName();
 	
 	private static final String Child_Fragment_Tags_Key = "Child_Fragment_Tags_Key";
 	private ArrayList<String> childFragTags;
+	private FragmentManager fm;
 
-	public MultiFragmentController()
+	public MultiFragmentManager()
 	{
 		super();
 		this.childFragTags = new ArrayList<String>();
+		fm = getChildFragmentManager();
 	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState)
-	{	    
+	{	
 	    if(savedInstanceState != null)
 	    {
 	    	this.childFragTags = savedInstanceState.getStringArrayList(Child_Fragment_Tags_Key);
@@ -36,7 +37,6 @@ public class MultiFragmentController extends Fragment
 	    super.onCreate(savedInstanceState);
 	    FragmentManager.enableDebugLogging(true);
 	}
-
 
 	@Override
 	public void onSaveInstanceState(Bundle outState)
@@ -75,7 +75,7 @@ public class MultiFragmentController extends Fragment
 		for (int i = 0; (returnedFragment == null) && (i < this.childFragTags.size()); ++i)
 		{
 			String fragmentKey = this.childFragTags.get(i);
-			Fragment frag = getChildFragmentManager().findFragmentByTag(fragmentKey);
+			GcFragment frag = (GcFragment) fm.findFragmentByTag(fragmentKey);
 			if (fragClass.isInstance(frag))
 			{
 				returnedFragment = (T) frag;
@@ -83,20 +83,45 @@ public class MultiFragmentController extends Fragment
 		}
 		return returnedFragment;
 	}
-
-	public void addFragment(Fragment frag, String tag)
+	
+	public GcFragment getFragmentByTag(String tag)
 	{
-		FragmentTransaction ft = getChildFragmentManager().beginTransaction();
-		ft.add(frag, tag).commit();
-		this.childFragTags.add(tag);
+		GcFragment fragment = null;
+		if(childFragTags.contains(tag))
+		{
+			fragment = (GcFragment) fm.findFragmentByTag(tag);
+		}
+		return fragment;
+	}
+
+	public void addFragment(GcFragment frag, String tag)
+	{
+		if(!childFragTags.contains(tag))
+		{
+			FragmentTransaction ft = fm.beginTransaction();
+			ft.add(frag, tag).commit();
+			fm.executePendingTransactions();
+			this.childFragTags.add(tag);
+		}
+		else 
+		{
+			throw new IllegalArgumentException("GcFragment Tag :"+tag+" Exist...");
+		}
+	}
+	
+	public void addFragment(GcFragment frag)
+	{
+		StringBuilder sb = new StringBuilder(frag.getClass().getSimpleName());
+		sb.append(".").append(Math.random());
+		addFragment(frag, sb.toString());
 	}
 	
 	public void removeFragment(String tag)
 	{
 		if(childFragTags.contains(tag))
 		{
-			Fragment frag = getChildFragmentManager().findFragmentByTag(tag);
-			FragmentTransaction ft = getChildFragmentManager().beginTransaction();
+			GcFragment frag = (GcFragment) fm.findFragmentByTag(tag);
+			FragmentTransaction ft = fm.beginTransaction();
 			ft.remove(frag).commit();
 			this.childFragTags.remove(tag);
 		}
@@ -106,10 +131,10 @@ public class MultiFragmentController extends Fragment
     {
     	if(childFragTags.contains(tag))
 		{
-			Fragment frag = getChildFragmentManager().findFragmentByTag(tag);
+			Fragment frag = fm.findFragmentByTag(tag);
 			FragmentTransaction ft = getChildFragmentManager().beginTransaction();
 			ft.show(frag).commit();
-			getChildFragmentManager().executePendingTransactions();
+			fm.executePendingTransactions();
 		}
     }
 
@@ -117,35 +142,56 @@ public class MultiFragmentController extends Fragment
     {
     	if(childFragTags.contains(tag))
 		{
-			Fragment frag = getChildFragmentManager().findFragmentByTag(tag);
-			FragmentTransaction ft = getChildFragmentManager().beginTransaction();
+			Fragment frag = fm.findFragmentByTag(tag);
+			FragmentTransaction ft = fm.beginTransaction();
 			ft.hide(frag).commit();
-			getChildFragmentManager().executePendingTransactions();
+			fm.executePendingTransactions();
 		}
     }
-
-    @Override
-    public void onStop()
+    
+    public int getFragmentSize()
     {
-        Log.v(TAG, this + ": onStop isRemoving=" + isRemoving());
-        if (isRemoving())
-        {
-           
-        }
-        super.onStop();
+    	return childFragTags.size();
+    }
+    
+    public List<String> getFragmentTags()
+    {
+    	List<String> tagsList = new ArrayList<String>();
+    	tagsList.addAll(childFragTags);
+    	return tagsList;
     }
 
     @Override
     public void onDestroy()
     {
         Log.v(TAG, this + ": onDestroy isremoving=" + isRemoving());
-        if (isRemoving())
+        for (String tag : childFragTags)
         {
-            for (String tag : childFragTags)
-            {
-                this.removeFragment(tag);
-            }
+            this.removeFragment(tag);
         }
         super.onDestroy();
+    }
+    
+    @Override
+    public boolean onBackPressed()
+    {
+    	Log.v(TAG, this+": MFM onBackPressed");
+        boolean consumed = false;
+        
+        // Dispatch onBackPressed
+        for (String tag : childFragTags)
+        {
+            GcFragment frag = getFragmentByTag(tag);
+            if (frag != null)
+            {
+                consumed |= frag.onBackPressed();
+                Log.v(TAG, "onBackPressed from:"+frag+" consumed:"+consumed);
+                if (consumed) 
+                	break;
+            }
+        }
+        
+        // if consumed = true, ARActivity onBackPressed is not called.
+        return consumed;
     }
 }

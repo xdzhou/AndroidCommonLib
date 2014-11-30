@@ -1,4 +1,4 @@
-package com.loic.common.utils;
+package com.loic.common;
 
 import android.app.Application;
 import android.content.Context;
