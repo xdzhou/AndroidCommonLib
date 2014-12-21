@@ -1,97 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <declare-styleable name="ARButton">
-        <attr name="ratio" format="string" />
-        <attr name="fixedDimension" >
-            <flag name="width" value="1" />
-            <flag name="height" value="2" />
+    <declare-styleable name="WeekView">
+        <attr name="firstDayOfWeek" format="enum">
+            <enum name="sunday" value="1"/>
+            <enum name="monday" value="2"/>
+            <enum name="tuesday" value="3"/>
+            <enum name="wednesday" value="4"/>
+            <enum name="thursday" value="5"/>
+            <enum name="friday" value="6"/>
+            <enum name="saturday" value="7"/>
         </attr>
-
-        <attr name="backgroundImage" format="reference" />
-        <attr name="leftImage" format="reference" />
-        <attr name="rightImage" format="reference" />
-
-        <attr name="fontSize" format="dimension" />
-        <attr name="text" format="reference|string" />
-
-        <attr name="textPaddingTop" format="dimension" />
-        <attr name="textPaddingBottom" format="dimension" />
-        <attr name="textPaddingLeft" format="dimension" />
-        <attr name="textPaddingRight" format="dimension" />
-        
-        <attr name="leftIconPaddingTop" format="dimension" />
-        <attr name="leftIconPaddingBottom" format="dimension" />
-        <attr name="leftIconPaddingLeft" format="dimension" />
-        <attr name="leftIconPaddingRight" format="dimension" />
-
-        <attr name="rightIconPaddingTop" format="dimension" />
-        <attr name="rightIconPaddingBottom" format="dimension" />
-        <attr name="rightIconPaddingLeft" format="dimension" />
-        <attr name="rightIconPaddingRight" format="dimension" />
-        
-        <attr name="leftIconWidth" format="dimension">
-            <flag name="wrap_content" value="-1" />
+        <attr name="hourHeight" format="dimension"/>
+        <attr name="textSize" format="dimension"/>
+        <attr name="eventTextSize" format="dimension"/>
+        <attr name="headerColumnPadding" format="dimension"/>
+        <attr name="headerRowPadding" format="dimension"/>
+        <attr name="columnGap" format="dimension"/>
+        <attr name="headerColumnTextColor" format="color"/>
+        <attr name="noOfVisibleDays" format="integer"/>
+        <attr name="headerRowBackgroundColor" format="color"/>
+        <attr name="dayBackgroundColor" format="color"/>
+        <attr name="hourSeparatorColor" format="color"/>
+        <attr name="todayBackgroundColor" format="color"/>
+        <attr name="todayHeaderTextColor" format="color"/>
+        <attr name="hourSeparatorHeight" format="dimension"/>
+        <attr name="eventTextColor" format="color"/>
+        <attr name="eventPadding" format="dimension"/>
+        <attr name="headerColumnBackground" format="color"/>
+        <attr name="dayNameLength" format="enum">
+            <enum name="length_short" value="1"/>
+            <enum name="length_long" value="2"/>
         </attr>
-        <attr name="leftIconHeight" format="dimension" >
-            <flag name="wrap_content" value="-1" />
-        </attr>
-        <attr name="rightIconWidth" format="dimension" >
-            <flag name="wrap_content" value="-1" />
-        </attr>
-        <attr name="rightIconHeight" format="dimension" >
-            <flag name="wrap_content" value="-1" />
-        </attr>
-        
-        <attr name="singleLine" format="boolean" />
-        <attr name="maxLines" format="integer" />
-        <attr name="autoShrinkText" format="boolean" />
-
-        <attr name="textGravity" >
-            <flag name="left" value="0x01" />
-            <flag name="right" value="0x02" />
-            <flag name="center_horizontal" value="0x04" />
-            <flag name="top" value="0x08" />
-            <flag name="bottom" value="0x10" />
-            <flag name="center_vertical" value="0x20" />
-            <flag name="center" value="0x40" />
-        </attr>
-        <attr name="leftIconGravity">
-            <flag name="left" value="0x01" />
-            <flag name="right" value="0x02" />
-            <flag name="center_horizontal" value="0x04" />
-            <flag name="top" value="0x08" />
-            <flag name="bottom" value="0x10" />
-            <flag name="center_vertical" value="0x20" />
-            <flag name="center" value="0x40" />
-        </attr>
-        <attr name="rightIconGravity">
-            <flag name="left" value="0x01" />
-            <flag name="right" value="0x02" />
-            <flag name="center_horizontal" value="0x04" />
-            <flag name="top" value="0x08" />
-            <flag name="bottom" value="0x10" />
-            <flag name="center_vertical" value="0x20" />
-            <flag name="center" value="0x40" />
-        </attr>
-    </declare-styleable>
-
-    <declare-styleable name="ARJoystick">
-        <attr name="backgroundImageID" format="reference" />
-        <attr name="foregroundImageID" format="reference" />
-        <attr name="resetOnRelease" format="boolean" />
-        <attr name="joystickDirection" >
-            <flag name="none" value="0" />
-            <flag name="all" value="1" />
-            <flag name="horizontal" value="2" />
-            <flag name="vertical" value="3" />
-        </attr>
-        
-    </declare-styleable>
-    
-    <declare-styleable name="ARLabel">
-        <attr name="minTextSize" format="dimension" />
-        <attr name="precision" format="float" />
-        <attr name="sizeToFit" format="boolean" />
+        <attr name="overlappingEventGap" format="dimension"/>
+        <attr name="eventMarginVertical" format="dimension"/>
     </declare-styleable>
     
     <attr name="orientation" format="enum">
@@ -103,25 +44,6 @@
         <enum name="resize" value="0"/>
         <enum name="crop" value="1"/>
     </attr>
-    
-    <declare-styleable name="ARSlider">
-        <!-- Thumb drawable -->
-        <attr name="thumbDrawable" format="reference" />
-        <!-- Progress indicator -->
-        <attr name="progressDrawable" format="reference" />
-        <!-- Background track (adjusted according to thumb size) -->
-        <attr name="trackDrawable" format="reference" />
-        <!-- Sets if the color theme should be applied to the thumb -->
-        <attr name="thumbTheming" format="boolean" />
-        <!-- Sets if the color theme should be applied to the progress indicator -->
-        <attr name="progressTheming" format="boolean" />
-        <!-- Sets if the color theme should be applied to the track -->
-        <attr name="trackTheming" format="boolean" />
-        <!-- Bar orientation; horizontal or vertical -->
-        <attr name="orientation"/>
-        <!-- Bar progress drawing mode : resize or crop -->
-        <attr name="progressDrawMode"/>
-    </declare-styleable>
     
     <declare-styleable name="ARRoundRectSlider">
         <!-- Icon drawable -->
@@ -142,7 +64,6 @@
         <attr name="iconSidePadding" format="dimension" />
         <!-- Label text size -->
         <attr name="labelTextSize" format="dimension" />
-
     </declare-styleable>
     
     <!-- Defines the custom XML attributes supported for a HorizontalListView -->

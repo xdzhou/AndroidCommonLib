@@ -1,4 +1,4 @@
-package com.loic.common;
+package com.loic.common.manager;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -7,12 +7,12 @@ import android.hardware.Camera;
 import android.util.Log;
 import android.view.SurfaceHolder;
 
-public class CameraController 
+public class CameraManager 
 {
-	private static final String TAG = CameraController.class.getSimpleName();
+	private static final String TAG = CameraManager.class.getSimpleName();
 	private Camera camera;
 	
-	public CameraController()
+	public CameraManager()
 	{
 		
 	}

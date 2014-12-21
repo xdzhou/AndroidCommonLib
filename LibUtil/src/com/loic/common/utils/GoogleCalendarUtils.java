@@ -1,5 +1,7 @@
 package com.loic.common.utils;
 
+import com.loic.common.LibApplication;
+
 import android.annotation.SuppressLint;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -22,7 +24,6 @@ public class GoogleCalendarUtils
 			calanderURL = "content://com.android.calendar/calendars";
 			calanderEventURL = "content://com.android.calendar/events";
 			calanderRemiderURL = "content://com.android.calendar/reminders";
-
 		} 
 		else 
 		{
@@ -31,21 +32,37 @@ public class GoogleCalendarUtils
 			calanderRemiderURL = "content://calendar/reminders";
 		}
 	}
+	
+	public static GoogleCalendarUtils getInstance()
+	{
+		GoogleCalendarUtils googleCalendarUtils = null;
+		try 
+		{
+			googleCalendarUtils = new GoogleCalendarUtils();
+		} 
+		catch (FailException e) 
+		{
+			e.printStackTrace();
+		}
+		return googleCalendarUtils;
+	}
 
-	public GoogleCalendarUtils()
+	private GoogleCalendarUtils() throws FailException
 	{
 		Cursor userCursor;
 		userCursor = LibApplication.getAppContext().getContentResolver().query(Uri.parse(calanderURL), null, null, null, null);
 		for (userCursor.moveToFirst(); !userCursor.isAfterLast(); userCursor.moveToNext()) 
 		{		
 			userName = userCursor.getString(userCursor.getColumnIndex("name"));
-			if (userName!=null && userName.contains("@gmail.com")) 
+			if (userName != null && userName.contains("@gmail.com")) 
 			{
 				calId = userCursor.getString(userCursor.getColumnIndex("_id"));
 				break;
 			}
 		}
 		userCursor.close();
+		if(userName == null || calId == null)
+			throw new FailException("init GoogleCalendarUtils failed...");
 	}
 
 	@SuppressLint("SimpleDateFormat")
