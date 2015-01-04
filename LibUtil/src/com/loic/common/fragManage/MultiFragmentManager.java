@@ -7,7 +7,6 @@ import com.loic.common.utils.DeviceUtils;
 import com.loic.common.utils.R;
 
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;

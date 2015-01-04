@@ -11,11 +11,13 @@ import android.os.Build;
 
 public class GoogleCalendarUtils 
 {
+	private static GoogleCalendarUtils instance;
+	
 	private static String calanderURL = "";
 	private static String calanderEventURL = "";
 	private static String calanderRemiderURL = "";
-	private String calId ;
-	private String userName ;
+	private String calId;
+	private String userName;
 
 	static 
 	{
@@ -35,16 +37,18 @@ public class GoogleCalendarUtils
 	
 	public static GoogleCalendarUtils getInstance()
 	{
-		GoogleCalendarUtils googleCalendarUtils = null;
-		try 
+		if(instance == null)
 		{
-			googleCalendarUtils = new GoogleCalendarUtils();
-		} 
-		catch (FailException e) 
-		{
-			e.printStackTrace();
+			try 
+			{
+				instance = new GoogleCalendarUtils();
+			} 
+			catch (FailException e) 
+			{
+				e.printStackTrace();
+			}
 		}
-		return googleCalendarUtils;
+		return instance;
 	}
 
 	private GoogleCalendarUtils() throws FailException

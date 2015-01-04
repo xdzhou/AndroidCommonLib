@@ -1,6 +1,5 @@
 package com.loic.common.manager;
 
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.HashMap;
@@ -15,7 +14,6 @@ import android.media.MediaMetadataRetriever;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Log;
-import android.util.LruCache;
 
 public class LoadImgManager 
 {
