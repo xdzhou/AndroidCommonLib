@@ -1,5 +1,6 @@
 package com.loic.common.utils;
 
+import com.loic.common.FailException;
 import com.loic.common.LibApplication;
 
 import android.annotation.SuppressLint;

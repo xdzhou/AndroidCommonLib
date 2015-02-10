@@ -27,28 +27,8 @@ import android.view.View.MeasureSpec;
 import android.view.WindowManager;
 import android.widget.Toast;
 
-public class AndroidUtils {
-	/**
-     * 检测网络是否可用
-     * 
-     */
-	public static boolean isNetworkAvailable() 
-	{
-        ConnectivityManager mgr = (ConnectivityManager) LibApplication.getAppContext().getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo[] info = mgr.getAllNetworkInfo();
-        if (info != null) 
-        {
-            for (int i = 0; i < info.length; i++) 
-            {
-                if (info[i].getState() == NetworkInfo.State.CONNECTED) 
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
-	}
-	
+public class AndroidUtils 
+{
 	/**
      * 在屏幕上层显示一个提示框
      * @param title
@@ -60,25 +40,6 @@ public class AndroidUtils {
 	{
         new AlertDialog.Builder(LibApplication.getAppContext()).setTitle(title).setMessage(msg)
             .setPositiveButton(android.R.string.ok, null).show();
-	}
-	
-	/**
-     * 在屏幕上显示一个稍后自动消失的提示信息
-     * @param msg    
-     * 			显示的信息 
-     */
-	public static void showInfo(final String msg) 
-	{
-        new Thread(new Runnable() 
-        {		
-			@Override
-			public void run()
-			{
-				Looper.prepare();
-				Toast.makeText(LibApplication.getAppContext(), msg, Toast.LENGTH_SHORT).show();
-				Looper.loop();
-			}
-		}).start();
 	}
 	
 	/**
@@ -116,34 +77,8 @@ public class AndroidUtils {
 	public static float dip2px(int dipValue) 
 	{
 		Resources r = LibApplication.getAppContext().getResources();
-		float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 14, r.getDisplayMetrics());
+		float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dipValue, r.getDisplayMetrics());
 		return px;
-	}
-	
-	/**
-     * 得到手机屏幕的宽度
-     * 
-     * @param activity
-     *          环境，为activity
-     */
-	public static int getScreenWidth(Activity activity)
-	{
-		WindowManager manager = activity.getWindowManager();
-		Display display = manager.getDefaultDisplay();
-		return display.getWidth();
-	}
-	
-	/**
-     * 得到手机屏幕的高度
-     * 
-     * @param activity
-     *          环境，为activity
-     */
-	public static int getScreenHeight(Activity activity)
-	{
-		WindowManager manager = activity.getWindowManager();
-		Display display = manager.getDefaultDisplay();
-		return display.getHeight();
 	}
 	
 	/**
@@ -249,17 +184,5 @@ public class AndroidUtils {
             sb.append("\nkey:" + key + ", value:" + bundle.getString(key));
         }
         return sb.toString();
-    }
-    
-    public static boolean is2gNetwork() 
-    {
-        TelephonyManager tm = (TelephonyManager) LibApplication.getAppContext().
-		getSystemService(Context.TELEPHONY_SERVICE);
-	    int type = tm.getNetworkType();
-	    if (type == TelephonyManager.NETWORK_TYPE_GPRS || type == TelephonyManager.NETWORK_TYPE_EDGE) 
-	    {
-	    	return true;
-	    }
-	    return false;
     }
 }

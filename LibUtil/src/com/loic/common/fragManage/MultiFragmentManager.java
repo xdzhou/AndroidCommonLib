@@ -21,8 +21,10 @@ import android.widget.FrameLayout;
 public class MultiFragmentManager extends GcFragment
 {
 	private static final String TAG = MultiFragmentManager.class.getSimpleName();
-	private static final String MFC_KEYS_ARRAY = "MFC_KEYS_ARRAY";
-    private static final String MFC_FORCE_LANDSCAPE = "MFC_FORCE_LANDSCAPE";
+	private static final String MFM_fragement_KeyList_Key = "MFM_fragement_KeyList_Key";
+    private static final String MFM_Force_Landscape_Key = "MFM_Force_Landscape_Key";
+    private static final String MFM_Fragment_Inshowing_Key = "MFM_Fragment_Inshowing_Key";
+    
 	private static int keyindex = 0;
 
 	private ArrayList<String> fragmentKeys;
@@ -32,6 +34,8 @@ public class MultiFragmentManager extends GcFragment
 	private FrameLayout parent;
 
     private FragmentManager mChildFragmentManager;
+    
+    protected Class<? extends GcFragment> fragmentClassInShowing;
 
 	/*
 	 * _________________
@@ -91,6 +95,21 @@ public class MultiFragmentManager extends GcFragment
 	public void onCreate(Bundle savedInstanceState)
 	{
 	    super.onCreate(savedInstanceState);
+	    if(savedInstanceState != null)
+	    {
+	    	String fragClassName = savedInstanceState.getString(MFM_Fragment_Inshowing_Key, null);
+		    if(fragClassName != null)
+		    {
+		    	try 
+		    	{
+					fragmentClassInShowing = (Class<? extends GcFragment>) Class.forName(fragClassName);
+				} 
+		    	catch (ClassNotFoundException e) 
+		    	{
+					e.printStackTrace();
+				}
+		    }
+	    }
 	}
 
 	/**
@@ -103,8 +122,10 @@ public class MultiFragmentManager extends GcFragment
 	public void onSaveInstanceState(Bundle outState)
 	{
 		super.onSaveInstanceState(outState);
-		outState.putStringArrayList(MFC_KEYS_ARRAY, this.fragmentKeys);
-        outState.putBoolean(MFC_FORCE_LANDSCAPE, forceLandscape);
+		outState.putStringArrayList(MFM_fragement_KeyList_Key, this.fragmentKeys);
+        outState.putBoolean(MFM_Force_Landscape_Key, forceLandscape);
+        if(fragmentClassInShowing != null)
+        	outState.putString(MFM_Fragment_Inshowing_Key, fragmentClassInShowing.getName());
 	}
 
 	/**
@@ -129,8 +150,8 @@ public class MultiFragmentManager extends GcFragment
 
 		if (savedInstanceState != null)
 		{
-            this.forceLandscape = savedInstanceState.getBoolean(MFC_FORCE_LANDSCAPE);
-            this.fragmentKeys = savedInstanceState.getStringArrayList(MFC_KEYS_ARRAY);
+            this.forceLandscape = savedInstanceState.getBoolean(MFM_Force_Landscape_Key);
+            this.fragmentKeys = savedInstanceState.getStringArrayList(MFM_fragement_KeyList_Key);
             if (!this.forceLandscape || DeviceUtils.isLandscape())
             {
                 refreshFragments();
@@ -490,7 +511,7 @@ public class MultiFragmentManager extends GcFragment
         if (this.fragmentKeys.contains(tag))
         {
             GcFragment frag = (GcFragment) this.mChildFragmentManager.findFragmentByTag(tag);
-            if ((frag != null) && !frag.isHidden())
+            if (frag != null)
             {
                 this.fragmentKeys.remove(tag);
                 FragmentTransaction ft = this.mChildFragmentManager.beginTransaction();
@@ -543,6 +564,16 @@ public class MultiFragmentManager extends GcFragment
             ft.show(frag).commit();
             this.mChildFragmentManager.executePendingTransactions();
         }
+    }
+    
+    public void showFragment(GcFragment frag)
+    {
+    	if(frag != null)
+    	{
+    		FragmentTransaction ft = this.mChildFragmentManager.beginTransaction();
+            ft.show(frag).commit();
+            this.mChildFragmentManager.executePendingTransactions();
+    	}
     }
 
     /**
@@ -658,7 +689,9 @@ public class MultiFragmentManager extends GcFragment
     		Bundle oldData = fragment.getArguments();
     		oldData.clear();
     		oldData.putAll(data);
+    		showFragment(fragment);
 		}
+    	fragmentClassInShowing = fragment.getClass();
     }
     
     public void gobackToGcFragment(Class<? extends GcFragment> fragmentClass)
@@ -754,7 +787,6 @@ public class MultiFragmentManager extends GcFragment
         return consumed;
     }
 
-
     @Override
     public boolean dispatchKeyEvent(KeyEvent event)
     {
@@ -810,5 +842,16 @@ public class MultiFragmentManager extends GcFragment
         }
 
         return consumed;
+    }
+    
+    public boolean onOpenElement(MenuElementItem menuElementItem, int position)
+    {
+    	if(menuElementItem != null && menuElementItem.fragmentClass != null && !fragmentClassInShowing.isAssignableFrom(menuElementItem.fragmentClass))
+    	{
+    		showGcFragment(menuElementItem.fragmentClass, true, null);
+    		return true;
+    	}
+    		
+    	return false;
     }
 }

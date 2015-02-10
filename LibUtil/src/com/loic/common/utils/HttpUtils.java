@@ -20,6 +20,8 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.apache.http.NameValuePair;
 
+import com.loic.common.FailException;
+
 import android.util.Log;
 
 public class HttpUtils 
