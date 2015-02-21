@@ -1,7 +1,5 @@
 package com.loic.common.utils;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -14,12 +12,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.xeustechnologies.jtar.TarEntry;
-import org.xeustechnologies.jtar.TarInputStream;
-import org.xeustechnologies.jtar.TarOutputStream;
-
-import android.util.Log;
 
 public class FileUtils 
 {
@@ -524,100 +516,5 @@ public class FileUtils
         File file = new File(path);
         return (file.exists() && file.isFile() ? file.length() : -1);
     }
-    
-    /**
-     * Untar the contents of a tar file into the given directory, ignoring the
-     * relative pathname in the tar file, and delete the tar file.
-     * 
-     * Uses jtar: http://code.google.com/p/jtar/
-     * 
-     * @param tarFile The tar file to be untarred
-     * @param destinationDir The directory to untar into
-     * @throws IOException
-     */
-    public static boolean unTarFile(String tarFile, String destFolder)
-    {
-    	boolean retVal = false;
-    	if(!tarFile.isEmpty() && isFileExist(tarFile) && !destFolder.isEmpty())
-    	{
-    		makeDirs(destFolder);
-			try {
-				// Create a TarInputStream
-				TarInputStream tis = new TarInputStream(new BufferedInputStream(new FileInputStream(tarFile)));
-				TarEntry entry;
-				while((entry = tis.getNextEntry()) != null) 
-				{
-					int count;
-					byte data[] = new byte[2048];
-					String pathName = entry.getName();
-					Log.d(TAG, "entry.getName() = "+pathName);
-				    String fileName = pathName.substring(pathName.lastIndexOf('/'), pathName.length());
-					FileOutputStream fos = new FileOutputStream(destFolder + fileName);
-					BufferedOutputStream dest = new BufferedOutputStream(fos);
-			
-					while((count = tis.read(data)) != -1) {
-						dest.write(data, 0, count);
-					}
-			
-					dest.flush();
-					dest.close();
-				}
-				tis.close();
-				deleteFile(tarFile);
-				retVal = true;
-			} catch (FileNotFoundException e) {
-				Log.e(TAG, e.getMessage());
-				e.printStackTrace();
-			} catch (IOException e) {
-				Log.e(TAG, e.getMessage());
-				e.printStackTrace();
-			}
-    	}
-    	return retVal;
-    }
-    
-    public static boolean tarFile(List<String> filesPathList, String destFilePath)
-    {
-    	boolean retVal = false;
-    	if(filesPathList != null && filesPathList.size() > 0 && !destFilePath.isEmpty())
-    	{
-    		//check fils existence
-    		for(String file : filesPathList)
-    		{
-    			if(!isFileExist(file))
-    				return false;
-    		}
-    		//create folder
-    		makeDirs(destFilePath);  		
-     	   	try {
-     	   		// Output file stream
-				FileOutputStream dest = new FileOutputStream(destFilePath);
-				// Create a TarOutputStream
-		    	TarOutputStream out = new TarOutputStream( new BufferedOutputStream(dest));
-		    	for(String file : filesPathList)
-		    	{
-		    		File fileToTar = new File(file);
-		    	    out.putNextEntry(new TarEntry(fileToTar, fileToTar.getName()));
-		    	    BufferedInputStream origin = new BufferedInputStream(new FileInputStream( fileToTar ));
-		    	    int count;
-		    	    byte data[] = new byte[2048];
-		    	    while((count = origin.read(data)) != -1) 
-		    	    {
-		    	         out.write(data, 0, count);
-		    	    }
-		    	    out.flush();
-		    	    origin.close();
-		    	    out.close();
-		    	    retVal = true;
-		    	}
-			} catch (FileNotFoundException e) {
-				Log.e(TAG, e.getMessage());
-				e.printStackTrace();
-			} catch (IOException e) {
-				Log.e(TAG, e.getMessage());
-				e.printStackTrace();
-			}
-    	}
-    	return retVal;
-    }
+
 }

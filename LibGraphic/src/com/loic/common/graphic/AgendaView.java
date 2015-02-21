@@ -142,19 +142,15 @@ public class AgendaView extends View
 		mScaleDetector = new ScaleGestureDetector(context, mScaleListener);
 		flyingScroller = new Scroller(context);
 		
-		initCalendar(-1, -1);
+		initCalendar(new Date(), false);
 	}
 	
-	private void initCalendar(int year, int month)
+	private void initCalendar(Date baseDate, boolean resetLimitDis)
 	{
 		today = Calendar.getInstance();
+		
 		originFirstDay = (Calendar) today.clone();
-		if(year != -1 && month != -1)
-		{
-			originFirstDay.set(Calendar.DAY_OF_MONTH, 1);
-			originFirstDay.set(Calendar.MONTH, month);
-			originFirstDay.set(Calendar.YEAR, year);
-		}
+		originFirstDay.setTime(baseDate);
 		
 		int distanceToMonday = originFirstDay.get(Calendar.DAY_OF_WEEK) - Calendar.MONDAY;
 		distanceToMonday = (distanceToMonday < 0) ? distanceToMonday + 7 : distanceToMonday;
@@ -180,6 +176,12 @@ public class AgendaView extends View
 					break;
 				}
 			}
+		}
+		
+		if(resetLimitDis)
+		{
+			minPositionX = totalStepToValidStep(1 - originFirstDay.get(Calendar.DAY_OF_MONTH)) * mDayColoumWidth;
+			maxPositionX = (totalStepToValidStep(originFirstDay.getActualMaximum(Calendar.DAY_OF_MONTH) - originFirstDay.get(Calendar.DAY_OF_MONTH)) - dayNumPerPage + 1) * mDayColoumWidth;
 		}
 	}
 	
@@ -625,6 +627,47 @@ public class AgendaView extends View
 			drawPositionY = maxPositionY;
 	}
 	
+	private void resetEventMap(List<AgendaEvent> events)
+	{
+		eventsMap.clear();
+		if(events != null && !events.isEmpty())
+		{
+			Calendar cal = Calendar.getInstance();
+			for(AgendaEvent event : events)
+			{
+				cal.setTime(event.mStartTime);
+				int dayOfMonth = cal.get(Calendar.DAY_OF_MONTH);
+				List<EventRect> eventRects = eventsMap.get(dayOfMonth);
+				if(eventRects == null)
+				{
+					eventRects = new ArrayList<AgendaView.EventRect>();
+					eventRects.add(new EventRect(event, null));
+					eventsMap.put(dayOfMonth, eventRects);
+				}
+				else 
+				{
+					eventRects.add(new EventRect(event, null));
+				}
+			}
+		}
+	}
+	
+	private void scrollToDayOfMonth(int dayOfMonth)
+	{
+		if(dayOfMonth >= 1 && dayOfMonth <= originFirstDay.getActualMaximum(Calendar.MONTH))
+		{
+			flyingScroller.forceFinished(true);
+			
+			float delta = totalStepToValidStep(dayOfMonth - originFirstDay.get(Calendar.DAY_OF_MONTH)) * mDayColoumWidth;
+			if(delta < minPositionX)
+				delta = minPositionX;
+			else if (delta > maxPositionX) 
+				delta = maxPositionX;
+			
+			flyingScroller.startScroll((int) drawPositionX, 0, (int) (delta - drawPositionX), 0);
+	        ViewCompat.postInvalidateOnAnimation(AgendaView.this);
+		}
+	}
 	/******************************************************
 	 ****************** Common Inner Class ****************
 	 ******************************************************/
@@ -653,38 +696,69 @@ public class AgendaView extends View
 	/******************************************************
 	 ****************** Common Public Func ****************
 	 ******************************************************/
-	public void setEventList(List<AgendaEvent> events)
+	public String refreshAgendaWithNewDate(int year, int month, boolean forceLoad)
 	{
-		eventsMap.clear();
 		Calendar cal = Calendar.getInstance();
-		for(AgendaEvent event : events)
-		{
-			cal.setTime(event.mStartTime);
-			int dayOfMonth = cal.get(Calendar.DAY_OF_MONTH);
-			List<EventRect> eventRects = eventsMap.get(dayOfMonth);
-			if(eventRects == null)
-			{
-				eventRects = new ArrayList<AgendaView.EventRect>();
-				eventRects.add(new EventRect(event, null));
-				eventsMap.put(dayOfMonth, eventRects);
-			}
-			else 
-			{
-				eventRects.add(new EventRect(event, null));
-			}
-		}
-		invalidate();
+		cal.set(Calendar.YEAR, year);
+		cal.set(Calendar.MONTH, month);
+		return refreshAgendaWithNewDate(cal.getTime(), forceLoad);
 	}
 	
-	public String setYearMonth(int year, int month)
+	public String refreshAgendaWithNewDate(Date newDate, boolean forceLoad)
 	{
-		initCalendar(year, month);
-		invalidate();
-		return year+" "+dfs.getShortMonths()[month];
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(newDate);
+		if(! forceLoad && cal.get(Calendar.YEAR) == originFirstDay.get(Calendar.YEAR) && cal.get(Calendar.MONTH) == originFirstDay.get(Calendar.MONTH))
+		{
+			scrollToDayOfMonth(cal.get(Calendar.DAY_OF_MONTH));
+		}
+		else 
+		{
+			initCalendar(newDate, true);
+			if(listener != null && listener.get() != null)
+				resetEventMap(listener.get().onNeedNewEventList(originFirstDay.get(Calendar.YEAR), originFirstDay.get(Calendar.MONTH)));
+			else
+				eventsMap.clear();
+			
+			drawPositionX = 0;
+			invalidate();
+		}
+		return cal.get(Calendar.YEAR)+" "+dfs.getMonths()[cal.get(Calendar.MONTH)];
+	}
+	
+	public String refreshAgendaWithNewDate(Date newDate)
+	{
+		return refreshAgendaWithNewDate(newDate, false);
+	}
+	
+	public int[] getAgendaYearMonth()
+	{
+		return new int[] {originFirstDay.get(Calendar.YEAR), originFirstDay.get(Calendar.MONTH)};
+	}
+	
+	public int[] getPreviousYearMonth()
+	{
+		if(originFirstDay.get(Calendar.MONTH) == Calendar.JANUARY)
+			return new int[] {originFirstDay.get(Calendar.YEAR) - 1, Calendar.DECEMBER};
+		else
+			return new int[] {originFirstDay.get(Calendar.YEAR), originFirstDay.get(Calendar.MONTH) - 1};
+	}
+	
+	public int[] getNextYearMonth()
+	{
+		if(originFirstDay.get(Calendar.MONTH) == Calendar.DECEMBER)
+			return new int[] {originFirstDay.get(Calendar.YEAR) + 1, Calendar.JANUARY};
+		else
+			return new int[] {originFirstDay.get(Calendar.YEAR), originFirstDay.get(Calendar.MONTH) + 1};
 	}
 	
 	public void setEventTouchListener(AgendaViewEventTouchListener listener)
 	{
+		Class<? extends AgendaViewEventTouchListener> listenerClass = listener.getClass();
+		if(listenerClass.isAnonymousClass() || listenerClass.isMemberClass() || listenerClass.isLocalClass())
+		{
+			throw new IllegalArgumentException("The following AgendaViewEventTouchListener should be static or leaks might occur: " + listenerClass.getCanonicalName());
+		}
 		this.listener = new WeakReference<AgendaView.AgendaViewEventTouchListener>(listener);
 	}
 	
@@ -701,5 +775,6 @@ public class AgendaView extends View
 	{
 		public void onEventClicked(AgendaEvent event, RectF rect);
 		public void onEventLongPressed(AgendaEvent event, RectF rect);
+		public List<AgendaEvent> onNeedNewEventList(int year, int month);
 	}
 }

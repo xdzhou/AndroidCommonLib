@@ -31,6 +31,11 @@ public class SqliteWorker
     	SqliteManager.updateData(helper, model);
     }
     
+    public void updateData(Object model, String where)
+    {
+    	SqliteManager.updateData(helper, model, where);
+    }
+    
     public void deleteData(Class modelClass, String where)
     {
     	SqliteManager.deleteData(helper, modelClass, where);

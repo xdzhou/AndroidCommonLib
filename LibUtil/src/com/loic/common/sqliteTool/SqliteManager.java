@@ -49,7 +49,7 @@ public class SqliteManager
 					sb.append("int");
 					break;
 				default:
-					Log.e(TAG, "Unsupport Class Type : "+field.getType().getName());
+					//Log.e(TAG, "Unsupport Class Type : "+field.getType().getName());
 					continue;
 				}
 				if(id != null)
@@ -57,7 +57,9 @@ public class SqliteManager
 				sb.append(", ");
 			}
 			String sql = sb.toString();
-			return sql.substring(0, sql.length()-2)+");";
+			sql = sql.substring(0, sql.length()-2)+");";
+			Log.d(TAG, "generateTableSql - sql : "+sql);
+			return sql;
 		}
 		else 
 		{
@@ -74,9 +76,11 @@ public class SqliteManager
     		return null;
 		
     	SQLiteDatabase db = helper.getReadableDatabase();
-    	String sql = "select * from "+modelClass.getSimpleName();
+    	String sql = "select * from ".concat(modelClass.getSimpleName());
     	if(where != null)
     		sql = sql.concat(" where ").concat(where).concat(";");
+    	Log.d(TAG, "retrieveDatas - sql : "+sql);
+    	
         Cursor cursor = db.rawQuery(sql, null);
         List<Object> list = new ArrayList<Object>();
 
@@ -96,7 +100,8 @@ public class SqliteManager
 						break;
 					case DateField:
 						long time = cursor.getLong(columnIndex);
-						field.set(model, new Date(time));
+						if(time > 0)
+							field.set(model, new Date(time));
 						break;
 					case LongField:
 						field.set(model, cursor.getLong(columnIndex));
@@ -111,11 +116,11 @@ public class SqliteManager
 					case EnumField:
 						int enumIndex = cursor.getInt(columnIndex);
 						Object[] objects = field.getType().getEnumConstants();
-						if(enumIndex < objects.length)
+						if(enumIndex >= 0 && enumIndex < objects.length)
 							field.set(model, objects[enumIndex]);
 						break;	
 					default:
-						Log.e(TAG, "Unsupport Class Type : "+field.getType().getName());
+						//Log.e(TAG, "Unsupport Class Type : "+field.getType().getName());
 						break;
 					}
 	        	}
@@ -186,7 +191,7 @@ public class SqliteManager
 				stringValue = String.valueOf(Arrays.asList(idField.getType().getEnumConstants()).indexOf(value));
 				break;
 			default:
-				Log.e(TAG, "Unsupport Class Type : "+idField.getType().getName());
+				//Log.e(TAG, "Unsupport Class Type : "+idField.getType().getName());
 				break;
 			}
 			SQLiteDatabase db = helper.getWritableDatabase();
@@ -202,6 +207,13 @@ public class SqliteManager
 			e.printStackTrace();
 		}
 	}
+	
+	public static void updateData(SQLiteOpenHelper helper, Object model, String where)
+    {
+		SQLiteDatabase db = helper.getWritableDatabase();
+    	db.update(model.getClass().getSimpleName(), autoCreateContentValues(model), where, null);
+    	db.close();
+    }
 	
 	public static void deleteData(SQLiteOpenHelper helper, Class modelClass, String where)
     {
@@ -244,7 +256,7 @@ public class SqliteManager
 				stringValue = String.valueOf(Arrays.asList(idField.getType().getEnumConstants()).indexOf(value));
 				break;
 			default:
-				Log.e(TAG, "Unsupport Class Type : "+idField.getType().getName());
+				//Log.e(TAG, "Unsupport Class Type : "+idField.getType().getName());
 				break;
 			}
 			SQLiteDatabase db = helper.getWritableDatabase();
@@ -305,11 +317,8 @@ public class SqliteManager
 		return null;
 	}
 	
-    public static ContentValues autoCreateContentValues(Object model)
+    private static ContentValues autoCreateContentValues(Object model)
     {
-    	if(! isModel(model.getClass()))
-    		return null;
-    	
     	ContentValues cv = new ContentValues();
     	Field[] allFields = model.getClass().getDeclaredFields();
 
@@ -318,19 +327,18 @@ public class SqliteManager
     		try 
     		{
 				Object value = field.get(model);
-				if(value == null) 
-					continue;
 				
 				switch (getFieldType(field)) 
     			{
 				case StringField:
-					cv.put(field.getName(), value.toString());
+					if(value != null)
+						cv.put(field.getName(), value.toString());
 					break;
 				case DateField:
-					cv.put(field.getName(), ((Date) value).getTime());
+					cv.put(field.getName(), value == null ? 0 : ((Date) value).getTime());
 					break;
 				case LongField:
-					cv.put(field.getName(), (Long) value);
+					cv.put(field.getName(), value == null ? 0 : (Long) value);
 					break;
 				case BooleanField:
 					cv.put(field.getName(), (Boolean) value);
@@ -339,10 +347,10 @@ public class SqliteManager
 					cv.put(field.getName(), (Integer) value);
 					break;
 				case EnumField:
-					cv.put(field.getName(), Arrays.asList(field.getType().getEnumConstants()).indexOf(value));
+					cv.put(field.getName(), value == null ? -1 : Arrays.asList(field.getType().getEnumConstants()).indexOf(value));
 					break;	
 				default:
-					Log.e(TAG, "Unsupport Class Type : "+field.getType().getName());
+					//Log.e(TAG, "Unsupport Class Type : "+field.getType().getName());
 					break;
 				}
 			} 
