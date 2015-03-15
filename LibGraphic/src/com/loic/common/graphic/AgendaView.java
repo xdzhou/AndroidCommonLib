@@ -39,7 +39,7 @@ public class AgendaView extends View
 	private static final String TAG = AgendaView.class.getSimpleName();
 	
 	private int startHour = 7;
-	private int endHour = 23;
+	private int endHour = 21;
 	private int dayNumPerPage = 5;
 	private boolean showWeekend = false;
 	private Calendar today;
@@ -145,13 +145,29 @@ public class AgendaView extends View
 		initCalendar(new Date(), false);
 	}
 	
-	private void initCalendar(Date baseDate, boolean resetLimitDis)
+	public void initCalendar(int year, int month, boolean resetLimitDis)
+	{
+		today = Calendar.getInstance();
+		
+		originFirstDay = (Calendar) today.clone();
+		originFirstDay.set(Calendar.YEAR, year);
+		originFirstDay.set(Calendar.MONTH, month);
+		
+		computerToMondayDis(resetLimitDis);
+	}
+	
+	public void initCalendar(Date baseDate, boolean resetLimitDis)
 	{
 		today = Calendar.getInstance();
 		
 		originFirstDay = (Calendar) today.clone();
 		originFirstDay.setTime(baseDate);
 		
+		computerToMondayDis(resetLimitDis);
+	}
+	
+	private void computerToMondayDis(boolean resetLimitDis)
+	{
 		int distanceToMonday = originFirstDay.get(Calendar.DAY_OF_WEEK) - Calendar.MONDAY;
 		distanceToMonday = (distanceToMonday < 0) ? distanceToMonday + 7 : distanceToMonday;
 		
@@ -731,6 +747,15 @@ public class AgendaView extends View
 		return refreshAgendaWithNewDate(newDate, false);
 	}
 	
+	public void askForEvents()
+	{
+		if(listener != null && listener.get() != null)
+		{
+			resetEventMap(listener.get().onNeedNewEventList(originFirstDay.get(Calendar.YEAR), originFirstDay.get(Calendar.MONTH)));
+			invalidate();
+		}
+	}
+	
 	public int[] getAgendaYearMonth()
 	{
 		return new int[] {originFirstDay.get(Calendar.YEAR), originFirstDay.get(Calendar.MONTH)};
@@ -766,7 +791,26 @@ public class AgendaView extends View
 	{
 		return drawPositionX + dx >= minPositionX && drawPositionX + dx <= maxPositionX;
 	}
-	
+
+	public int getStartHour() 
+	{
+		return startHour;
+	}
+
+	public void setStartHour(int startHour) 
+	{
+		this.startHour = startHour;
+	}
+
+	public int getEndHour() 
+	{
+		return endHour;
+	}
+
+	public void setEndHour(int endHour) 
+	{
+		this.endHour = endHour;
+	}
 	/******************************************************
 	 ******************** Touch listener ******************
 	 ******************************************************/

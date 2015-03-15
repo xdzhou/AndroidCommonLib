@@ -314,7 +314,7 @@ public class SqliteManager
 				}
 			}
 		}
-		return null;
+		return idField;
 	}
 	
     private static ContentValues autoCreateContentValues(Object model)

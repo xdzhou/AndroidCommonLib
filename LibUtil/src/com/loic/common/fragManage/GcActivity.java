@@ -3,13 +3,14 @@ package com.loic.common.fragManage;
 import com.loic.common.utils.R;
 
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
@@ -31,6 +32,7 @@ public abstract class GcActivity extends ActionBarActivity
         
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         menuDrawerList = (ListView) findViewById(R.id.left_drawer);
+        menuDrawerList.setBackgroundColor(Color.LTGRAY);
 
         // set a custom shadow that overlays the main content when the drawer opens
         mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
@@ -41,17 +43,17 @@ public abstract class GcActivity extends ActionBarActivity
         menuDrawerList.setAdapter(menuAdapter);
         menuDrawerList.setOnItemClickListener(new OnItemClickListener() 
         {
-			@Override
-			public void onItemClick(AdapterView<?> parent, View view, int position, long id) 
-			{
-				if(menuAdapter.getItemViewType(position) == 1)
-				{
-					menuDrawerList.setItemChecked(position, true);
-					onOpenElement(menuAdapter.getItem(position), position);
-					closeMainMenu();
-				}
-			}
-		});
+        	@Override
+        	public void onItemClick(AdapterView<?> parent, View view, int position, long id) 
+        	{
+        		if(menuAdapter.getItemViewType(position) == 1)
+        		{
+        			menuDrawerList.setItemChecked(position, true);
+        			onOpenElement(menuAdapter.getItem(position), position);
+        			closeMainMenu();
+        		}
+        	}
+        });
 
         // enable ActionBar app icon to behave as action to toggle nav drawer
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -59,19 +61,30 @@ public abstract class GcActivity extends ActionBarActivity
 
         // ActionBarDrawerToggle ties together the the proper interactions
         // between the sliding drawer and the action bar app icon
-        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.drawable.ic_drawer, R.string.drawer_open, R.string.drawer_close) 
+        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.drawer_open, R.string.drawer_close);
+        mDrawerToggle.setDrawerIndicatorEnabled(true);
+        mDrawerToggle.setToolbarNavigationClickListener(new View.OnClickListener() 
         {
-            public void onDrawerClosed(View view) 
-            {
-            }
-
-            public void onDrawerOpened(View drawerView) 
-            {
-            }
-        };
+			@Override
+			public void onClick(View v) 
+			{
+				if(mDrawerLayout.isDrawerOpen(menuDrawerList))
+					closeMainMenu();
+				else
+					openMainMenu();
+			}
+		});
         mDrawerLayout.setDrawerListener(mDrawerToggle);
         
         setCenterFragment(getInitCenterFragment(GcFragment.class));
+    }
+    
+    public void setLeftMenuEnable(boolean enable)
+    {
+    	if(enable)
+    		mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+    	else 
+    		mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
     }
     
     public void openMainMenu()
@@ -86,7 +99,7 @@ public abstract class GcActivity extends ActionBarActivity
     
     protected void onOpenElement(MenuElementItem menuElementItem, int position)
     {
-    	if(MultiFragmentManager.class.isAssignableFrom(menuElementItem.fragmentClass))
+    	if(menuElementItem.fragmentClass != null && MultiFragmentManager.class.isAssignableFrom(menuElementItem.fragmentClass))
     	{
     		setCenterFragment(menuElementItem.fragmentClass);
     	}
@@ -119,6 +132,13 @@ public abstract class GcActivity extends ActionBarActivity
         super.onPostCreate(savedInstanceState);
         mDrawerToggle.syncState();
     }
+    
+    @Override
+    public boolean onOptionsItemSelected (MenuItem item)
+    {
+    	mDrawerToggle.onOptionsItemSelected(item);
+		return super.onOptionsItemSelected (item);
+    }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) 
@@ -127,7 +147,18 @@ public abstract class GcActivity extends ActionBarActivity
         mDrawerToggle.onConfigurationChanged(newConfig);
     }
     
-    private Class<? extends GcFragment> getInitCenterFragment(Class<? extends GcFragment> defaultFragClass)
+    @Override
+	public void onBackPressed() 
+    {
+    	boolean consumed = false;
+		if(centerFragment != null)
+			consumed = centerFragment.onBackPressed();
+		
+		if(! consumed)
+			super.onBackPressed();
+	}
+
+	private Class<? extends GcFragment> getInitCenterFragment(Class<? extends GcFragment> defaultFragClass)
     {
     	Class<? extends GcFragment> fragClass = getInitCenterFragment();
     	return fragClass == null ? defaultFragClass : fragClass;

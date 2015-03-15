@@ -1,6 +1,7 @@
 package com.loic.common.fragManage;
 
 import com.gitonway.lee.niftymodaldialogeffects.lib.NiftyDialogBuilder;
+import com.loic.common.utils.R;
 
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
@@ -8,9 +9,9 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 
-public abstract class GcFragment extends Fragment 
+public class GcFragment extends Fragment 
 {
-	protected NiftyDialogBuilder dialogBuilder;
+	private NiftyDialogBuilder dialogShowing;
 	
 	@Override
 	public void onDestroy() 
@@ -49,11 +50,11 @@ public abstract class GcFragment extends Fragment
 		return manager;
 	}
 	
-	public ActionBarActivity getGcActivity()
+	public GcActivity getGcActivity()
 	{
-		ActionBarActivity gcActivity = null;
-		if(getActivity() != null && getActivity() instanceof ActionBarActivity)
-			gcActivity = ((ActionBarActivity) getActivity());
+		GcActivity gcActivity = null;
+		if(getActivity() != null && getActivity() instanceof GcActivity)
+			gcActivity = ((GcActivity) getActivity());
 		return gcActivity;
 	}
 	
@@ -71,50 +72,48 @@ public abstract class GcFragment extends Fragment
 	
 	public void hideDialog()
 	{
-		if(dialogBuilder != null)
-			dialogBuilder.dismiss();
+		if(dialogShowing != null && dialogShowing.isShowing() && getActivity() != null)
+		{
+			getActivity().runOnUiThread(new Runnable() 
+			{
+				@Override
+				public void run() 
+				{
+					dialogShowing.dismiss();
+				}
+			});
+		}	
+	}
+
+	protected int getInitDialogBackgroundColor()
+	{
+		return -1;
+	}
+	
+	private NiftyDialogBuilder initAlertDialog()
+	{
+		NiftyDialogBuilder dialogBuilder = new NiftyDialogBuilder(getActivity(), R.style.dialog_untran);
+		int color = getInitDialogBackgroundColor();
+		if(color != -1)
+			dialogBuilder.withDialogColor(color);
+		return dialogBuilder;
 	}
 	
 	public NiftyDialogBuilder createDialogBuilder(String title, String msg)
 	{
-		if(dialogBuilder == null)
-			dialogBuilder = NiftyDialogBuilder.getInstance(getActivity());
+		dialogShowing = initAlertDialog();
 		
-		return dialogBuilder.withTitle(title)
+		return dialogShowing.withTitle(title)
 	    .withMessage(msg).setCustomView(null);
 	}
-	
-	public void showDialog(final String title, final String msg)
-	{
-		if(getActivity() != null)
-		{
-			getActivity().runOnUiThread(new Runnable() {
-				
-				@Override
-				public void run() {
-					hideDialog();
-					createDialogBuilder(title, msg).show();
-				}
-			});
-		}
-		
-	}
-	
+
 	public NiftyDialogBuilder createDialogBuilderWithCancel (String title, String msg)
 	{
-		if(dialogBuilder == null)
-			dialogBuilder = NiftyDialogBuilder.getInstance(getActivity());
+		dialogShowing = initAlertDialog();
 		
-		return dialogBuilder.withTitle(title)
+		return dialogShowing.withTitle(title)
 	    .withMessage(msg)
 	    .withButton1Text(getString(android.R.string.cancel))
 	    .setButton1Click(cancelDialogListener);
 	}
-	
-	public void showDialogWithCancel (String title, String msg)
-	{
-		hideDialog();
-		createDialogBuilderWithCancel(title, msg).show();
-	}
-	
 }

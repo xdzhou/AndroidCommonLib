@@ -1,12 +1,14 @@
 package com.loic.common.manager;
 
-import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+
 import com.loic.common.LibApplication;
+
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -14,24 +16,21 @@ import android.media.MediaMetadataRetriever;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Log;
+import android.util.Patterns;
 
 public class LoadImgManager 
 {
 	private static final String TAG = LoadImgManager.class.getSimpleName();
-	
-	private static final String urlRegex = "\\b(https?|ftp|file|ldap)://"
-            + "[-A-Za-z0-9+&@#/%?=~_|!:,.;]"
-            + "*[-A-Za-z0-9+&@#/%=~_|]";
+
 	public static final String EXTERN_FOLDER_FILE_PATH;
 	public static final String APP_FOLDER_FILE_PATH;
 	
-	private Map<String, Bitmap> drawableCache;
-	private Set<String> invalideUrlList;
-	private Set<String> urlInProcessList;
-	private WeakReference<onDownloadImgReadyListener> listener;
+	private static LoadImgManager instance;
 	
-	private int expectImgWidth = -1; //use origin dimension
-	private int expectImgHeight = -1;
+	private Map<String, Bitmap> drawableCache;
+	private Set<String> noImgUrlList;
+	private Set<String> urlInProcessList;
+	private Set<onDownloadImgReadyListener> listeners;
 	
 	static
 	{
@@ -39,43 +38,53 @@ public class LoadImgManager
 		EXTERN_FOLDER_FILE_PATH = Environment.getExternalStorageDirectory().getAbsolutePath();
 	}
 	
-	public LoadImgManager()
+	public static LoadImgManager getInstance() 
 	{
-		this(20);
+		if(instance == null)
+			instance = new LoadImgManager(20);
+		return instance;
 	}
 	
-	public LoadImgManager(int cacheSize)
+	public void registerListener(onDownloadImgReadyListener listener)
+	{
+		if(listener != null)
+			listeners.add(listener);
+	}
+	
+	public void unregisterListener(onDownloadImgReadyListener listener)
+	{
+		if(listener != null)
+			listeners.remove(listener);
+	}
+	
+	private void dispatchImgLoadedEvent(String url, Bitmap bitmap)
+	{
+		for(onDownloadImgReadyListener listener : listeners)
+			listener.onDownloadImgReady(url, bitmap);
+	}
+	
+	private LoadImgManager(int cacheSize)
 	{
 		if(cacheSize > 0)
 			drawableCache = new HashMap<String, Bitmap>(cacheSize);
 		else
 			drawableCache = new HashMap<String, Bitmap>(20);
 		
-		this.listener = new WeakReference<onDownloadImgReadyListener>(null);
+		this.listeners = new HashSet<onDownloadImgReadyListener>();
 		urlInProcessList = new HashSet<String>();
-		invalideUrlList = new HashSet<String>();
-	}
-	
-	public boolean isInvalideUrl(String url)
-	{
-		return invalideUrlList.contains(url);
+		noImgUrlList = new HashSet<String>();
 	}
 	
 	public Bitmap getBitmapByUrl(String urlOrPath, int customedWidth, int customedHeight)
 	{
 		Bitmap bitmap = drawableCache.get(urlOrPath);
 		
-		if(bitmap == null && !urlInProcessList.contains(urlOrPath) && !invalideUrlList.contains(urlOrPath))
+		if(bitmap == null && !urlInProcessList.contains(urlOrPath) && !noImgUrlList.contains(urlOrPath))
 		{
 			urlInProcessList.add(urlOrPath);
 			new LoadImgTask(customedWidth, customedHeight).execute(urlOrPath);
 		}
 		return bitmap;
-	}
-	
-	public Bitmap getBitmapByUrl(String urlOrPath)
-	{
-		return getBitmapByUrl(urlOrPath, expectImgWidth, expectImgHeight);
 	}
 	
 	public static boolean isYoutubeUrl(String url)
@@ -92,7 +101,7 @@ public class LoadImgManager
 	{
 		boolean retVal = false;
 		if(url != null)
-			retVal = url.matches(urlRegex);
+			retVal = Patterns.WEB_URL.matcher(url).matches();
 		
 		return retVal;
 	}
@@ -133,7 +142,7 @@ public class LoadImgManager
 				{
 					Log.d(TAG, "Local Img load request for file path: "+urlOrPath);
 					String completeFilePath = getCompleteFilePath(urlOrPath);
-					if(urlOrPath.toLowerCase().endsWith(".mp4"))
+					if(urlOrPath.toLowerCase(Locale.US).endsWith(".mp4"))
 					{
 						retVal = loadVideoThumbnail(completeFilePath, customedWidth, customedHeight);
 					}
@@ -172,7 +181,6 @@ public class LoadImgManager
 			        }
 					catch (Exception e) 
 					{
-			            Log.e(TAG, e.getMessage());
 			            e.printStackTrace();
 			        }
 				}
@@ -189,11 +197,11 @@ public class LoadImgManager
 				if(result != null)
 					drawableCache.put(urlOrPath, result);
 				else
-					invalideUrlList.add(urlOrPath);
+					noImgUrlList.add(urlOrPath);
 				
 				urlInProcessList.remove(urlOrPath);
-				if(listener.get() != null)
-					listener.get().onDownloadImgReady(urlOrPath, result);
+				
+				dispatchImgLoadedEvent(urlOrPath, result);
 			}
 		}
 	}
@@ -285,27 +293,16 @@ public class LoadImgManager
         options.inJustDecodeBounds = false;
     }
 	
-	public void setExpectImgDimension(int expectWidth, int expectHeight)
-	{
-		if(expectWidth > 0 && expectHeight > 0)
-		{
-			expectImgWidth = expectWidth;
-			expectImgHeight = expectHeight;
-		}
-	}
-	
-	public void setListener(onDownloadImgReadyListener listener) 
-	{
-		this.listener = new WeakReference<onDownloadImgReadyListener>(listener);
-	}
-	
 	public void dispose()
 	{
-		this.listener.clear();
-		drawableCache.clear();
-		drawableCache = null;
-		urlInProcessList.clear();
-		urlInProcessList = null;
+		if(listeners != null)
+			listeners.clear();
+		if(drawableCache != null)
+			drawableCache.clear();
+		if(urlInProcessList != null)
+			urlInProcessList.clear();
+		if(noImgUrlList != null)
+			noImgUrlList.clear();
 	}
 	
 	public static interface onDownloadImgReadyListener
