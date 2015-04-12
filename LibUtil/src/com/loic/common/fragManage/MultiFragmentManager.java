@@ -659,13 +659,23 @@ public class MultiFragmentManager extends GcFragment
 	 */
     public void showGcFragment(Class<? extends GcFragment> fragmentClass, boolean needRemoveAll, Bundle data)
     {
+    	String fragTag = getFragmentTagOfClass(fragmentClass);
+    	
     	for(String tag : fragmentKeys)
     	{
-    		if(needRemoveAll)
-    			removeFragmentWithTag(tag);
-    		else
-    			hideFragmentWithTag(tag);
+    		if(! tag.equals(fragTag))
+    		{
+    			if(needRemoveAll)
+        		{
+        			removeFragmentWithTag(tag);
+        		}
+        		else
+        		{
+        			hideFragmentWithTag(tag);
+        		}
+    		}
     	}
+    	
     	GcFragment fragment = getFragmentOfClass(fragmentClass);
     	if(fragment == null)
     	{

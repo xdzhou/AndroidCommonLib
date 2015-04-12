@@ -101,6 +101,7 @@ public class GcFragment extends Fragment
 	
 	public NiftyDialogBuilder createDialogBuilder(String title, String msg)
 	{
+		hideDialog();
 		dialogShowing = initAlertDialog();
 		
 		return dialogShowing.withTitle(title)
@@ -109,6 +110,7 @@ public class GcFragment extends Fragment
 
 	public NiftyDialogBuilder createDialogBuilderWithCancel (String title, String msg)
 	{
+		hideDialog();
 		dialogShowing = initAlertDialog();
 		
 		return dialogShowing.withTitle(title)

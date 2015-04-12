@@ -52,8 +52,11 @@ public class SqliteManager
 					//Log.e(TAG, "Unsupport Class Type : "+field.getType().getName());
 					continue;
 				}
+				
 				if(id != null)
+				{
 					sb.append(" primary key");
+				}
 				sb.append(", ");
 			}
 			String sql = sb.toString();
@@ -278,13 +281,16 @@ public class SqliteManager
 	 ******************************************************/
 	private static String getTableName(Class modelClass)
 	{
+		Class<?> checkClass = modelClass;
 		String tabelName = null;
-		Model model = (Model) modelClass.getAnnotation(Model.class);
+		Model model = checkClass.getAnnotation(Model.class);
 		if(model != null)
 		{
-			//tabelName = model.tableName();
-			//if(tabelName == null)
-				tabelName = modelClass.getSimpleName();
+			tabelName = model.tableName();
+		}
+		if(tabelName == null)
+		{
+			tabelName = modelClass.getSimpleName();
 		}
 		return tabelName;
 	}
@@ -296,7 +302,8 @@ public class SqliteManager
 	
 	private static boolean isModel(Class modelClass)
 	{
-		return modelClass.getAnnotation(Model.class) != null;
+		Class<?> checkClass = modelClass;
+		return checkClass.getAnnotation(Model.class) != null;
 	}
 	
 	private static Field getModelIDField(Class modelClass)
@@ -332,7 +339,9 @@ public class SqliteManager
     			{
 				case StringField:
 					if(value != null)
+					{
 						cv.put(field.getName(), value.toString());
+					}
 					break;
 				case DateField:
 					cv.put(field.getName(), value == null ? 0 : ((Date) value).getTime());
