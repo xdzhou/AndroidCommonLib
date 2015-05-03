@@ -696,9 +696,12 @@ public class MultiFragmentManager extends GcFragment
     	}
     	else 
     	{
-    		Bundle oldData = fragment.getArguments();
-    		oldData.clear();
-    		oldData.putAll(data);
+    		if(data != null)
+    		{
+    			Bundle oldData = fragment.getArguments();
+        		oldData.clear();
+        		oldData.putAll(data);
+    		}
     		showFragment(fragment);
 		}
     	fragmentClassInShowing = fragment.getClass();

@@ -293,8 +293,9 @@ public class AgendaView extends View
 			delta = - delta;
 		}
 		for(int i = 0; i < dayNumPerPage + 1; i++)
+		{
 			drawDayColoum(canvas, delta + i);
-		
+		}
 		
 		canvas.drawLine(mTimeColoumWidth, 0, mTimeColoumWidth, getHeight(), mTimeTextPaint);
 	}
@@ -638,9 +639,13 @@ public class AgendaView extends View
 	private void checkCurrentPositionY()
 	{
 		if(drawPositionY < 0)
+		{
 			drawPositionY = 0;
+		}
 		else if(drawPositionY > maxPositionY)
+		{
 			drawPositionY = maxPositionY;
+		}
 	}
 	
 	private void resetEventMap(List<AgendaEvent> events)
@@ -670,15 +675,19 @@ public class AgendaView extends View
 	
 	private void scrollToDayOfMonth(int dayOfMonth)
 	{
-		if(dayOfMonth >= 1 && dayOfMonth <= originFirstDay.getActualMaximum(Calendar.MONTH))
+		if(dayOfMonth >= 1 && dayOfMonth <= originFirstDay.getActualMaximum(Calendar.DAY_OF_MONTH))
 		{
 			flyingScroller.forceFinished(true);
 			
 			float delta = totalStepToValidStep(dayOfMonth - originFirstDay.get(Calendar.DAY_OF_MONTH)) * mDayColoumWidth;
 			if(delta < minPositionX)
+			{
 				delta = minPositionX;
+			}
 			else if (delta > maxPositionX) 
+			{
 				delta = maxPositionX;
+			}
 			
 			flyingScroller.startScroll((int) drawPositionX, 0, (int) (delta - drawPositionX), 0);
 	        ViewCompat.postInvalidateOnAnimation(AgendaView.this);
@@ -697,7 +706,7 @@ public class AgendaView extends View
 		public int mColor;
 	}
 	
-	private class EventRect
+	private static class EventRect
 	{
 		public AgendaEvent event;
 		public RectF rectF;
@@ -732,9 +741,13 @@ public class AgendaView extends View
 		{
 			initCalendar(newDate, true);
 			if(listener != null && listener.get() != null)
+			{
 				resetEventMap(listener.get().onNeedNewEventList(originFirstDay.get(Calendar.YEAR), originFirstDay.get(Calendar.MONTH)));
+			}
 			else
+			{
 				eventsMap.clear();
+			}
 			
 			drawPositionX = 0;
 			invalidate();
@@ -764,17 +777,25 @@ public class AgendaView extends View
 	public int[] getPreviousYearMonth()
 	{
 		if(originFirstDay.get(Calendar.MONTH) == Calendar.JANUARY)
+		{
 			return new int[] {originFirstDay.get(Calendar.YEAR) - 1, Calendar.DECEMBER};
+		}
 		else
+		{
 			return new int[] {originFirstDay.get(Calendar.YEAR), originFirstDay.get(Calendar.MONTH) - 1};
+		}
 	}
 	
 	public int[] getNextYearMonth()
 	{
 		if(originFirstDay.get(Calendar.MONTH) == Calendar.DECEMBER)
+		{
 			return new int[] {originFirstDay.get(Calendar.YEAR) + 1, Calendar.JANUARY};
+		}
 		else
+		{
 			return new int[] {originFirstDay.get(Calendar.YEAR), originFirstDay.get(Calendar.MONTH) + 1};
+		}
 	}
 	
 	public void setEventTouchListener(AgendaViewEventTouchListener listener)
