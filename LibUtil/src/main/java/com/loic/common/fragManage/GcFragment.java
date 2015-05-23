@@ -4,7 +4,6 @@ import com.gitonway.lee.niftymodaldialogeffects.lib.NiftyDialogBuilder;
 import com.loic.common.utils.R;
 
 import android.support.v4.app.Fragment;
-import android.support.v7.app.ActionBarActivity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -104,8 +103,7 @@ public class GcFragment extends Fragment
 		hideDialog();
 		dialogShowing = initAlertDialog();
 		
-		return dialogShowing.withTitle(title)
-	    .withMessage(msg).setCustomView(null);
+		return dialogShowing.withTitle(title).withMessage(msg).setCustomView(null, null);
 	}
 
 	public NiftyDialogBuilder createDialogBuilderWithCancel (String title, String msg)

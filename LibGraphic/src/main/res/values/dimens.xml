@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Phone dimensions -->
+<resources>
+    <!-- Agenda View -->
+    <dimen name="agenda_view_left_timetext_width">20dp</dimen>
+    <dimen name="agenda_view_top_weektext_height">10dp</dimen>
+    
+</resources>

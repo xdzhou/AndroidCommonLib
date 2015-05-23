@@ -1,57 +1,78 @@
 package com.loic.common.manager;
 
+import java.io.File;
 import java.net.URL;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
-
-import com.loic.common.LibApplication;
 
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
 import android.os.AsyncTask;
-import android.os.Environment;
+import android.support.v4.util.LruCache;
 import android.util.Log;
 import android.util.Patterns;
 
-public class LoadImgManager 
+public class LoadImgManagerImpl extends LoadImgManager
 {
-	private static final String TAG = LoadImgManager.class.getSimpleName();
+	private static final String TAG = LoadImgManagerImpl.class.getSimpleName();
 
-	public static final String EXTERN_FOLDER_FILE_PATH;
-	public static final String APP_FOLDER_FILE_PATH;
+	private static final int maxAsyncTaskNum = 15;
 	
-	private static LoadImgManager instance;
+	private Set<onLoadImgReadyListener> listeners;
+	//loaded urls
+	private LruCache<String, Bitmap> loadedBitmaps;
+	//wait for loading 
+	private List<RequestInfo> inWaitUrlStack;
+	//url in loading
+	private List<String> loadingUrlList;
 	
-	private Map<String, Bitmap> drawableCache;
-	private Set<String> noImgUrlList;
-	private Set<String> urlInProcessList;
-	private Set<onDownloadImgReadyListener> listeners;
-	
-	static
+	public LoadImgManagerImpl()
 	{
-		APP_FOLDER_FILE_PATH = LibApplication.getAppContext().getFilesDir().getAbsolutePath();
-		EXTERN_FOLDER_FILE_PATH = Environment.getExternalStorageDirectory().getAbsolutePath();
+		int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+		int cacheSize = maxMemory >>> 4;
+		loadedBitmaps = new LruCache<String, Bitmap>(cacheSize)
+		{
+			@Override  
+	        protected int sizeOf(String key, Bitmap bitmap) 
+			{
+	            return bitmap == null ? 0 : bitmap.getByteCount() / 1024;  
+	        }
+		};
+		
+		this.listeners = new HashSet<onLoadImgReadyListener>();
+		loadingUrlList = new ArrayList<String>(maxAsyncTaskNum);
+		
+		inWaitUrlStack = new ArrayList<RequestInfo>();
 	}
 	
-	public static LoadImgManager getInstance() 
+	private static class RequestInfo
 	{
-		if(instance == null)
-			instance = new LoadImgManager(20);
-		return instance;
+		String url;
+		int width;
+		int height;
+		
+		public RequestInfo(String url, int width, int height) 
+		{
+			this.url = url;
+			this.width = width;
+			this.height = height;
+		}
 	}
 	
-	public void registerListener(onDownloadImgReadyListener listener)
+	@Override
+	public void addListener(onLoadImgReadyListener listener)
 	{
 		if(listener != null)
 			listeners.add(listener);
 	}
 	
-	public void unregisterListener(onDownloadImgReadyListener listener)
+	@Override
+	public void removeListener(onLoadImgReadyListener listener)
 	{
 		if(listener != null)
 			listeners.remove(listener);
@@ -59,32 +80,63 @@ public class LoadImgManager
 	
 	private void dispatchImgLoadedEvent(String url, Bitmap bitmap)
 	{
-		for(onDownloadImgReadyListener listener : listeners)
-			listener.onDownloadImgReady(url, bitmap);
-	}
-	
-	private LoadImgManager(int cacheSize)
-	{
-		if(cacheSize > 0)
-			drawableCache = new HashMap<String, Bitmap>(cacheSize);
-		else
-			drawableCache = new HashMap<String, Bitmap>(20);
-		
-		this.listeners = new HashSet<onDownloadImgReadyListener>();
-		urlInProcessList = new HashSet<String>();
-		noImgUrlList = new HashSet<String>();
-	}
-	
-	public Bitmap getBitmapByUrl(String urlOrPath, int customedWidth, int customedHeight)
-	{
-		Bitmap bitmap = drawableCache.get(urlOrPath);
-		
-		if(bitmap == null && !urlInProcessList.contains(urlOrPath) && !noImgUrlList.contains(urlOrPath))
+		for(onLoadImgReadyListener listener : listeners)
 		{
-			urlInProcessList.add(urlOrPath);
-			new LoadImgTask(customedWidth, customedHeight).execute(urlOrPath);
+			listener.onDownloadImgReady(url, bitmap);
+		}
+	}
+	
+	@Override
+	public Bitmap loadBitmapFor(String urlOrPath, int customedWidth, int customedHeight)
+	{
+		Bitmap bitmap = loadedBitmaps.get(urlOrPath);
+		
+		if(bitmap == null && !loadingUrlList.contains(urlOrPath))
+		{
+			int index = findUrlIndexInWaitList(urlOrPath);
+			if(index >= 0)
+			{
+				Log.d(TAG, "request url : "+urlOrPath+" in wainting list...");
+				RequestInfo requestInfo = inWaitUrlStack.remove(index);
+				inWaitUrlStack.add(requestInfo);
+			} else 
+			{
+				if(! isValideURL(urlOrPath) && ! new File(urlOrPath).exists())
+				{
+					Log.e(TAG, "not support URL or Path : "+urlOrPath);
+				} else 
+				{
+					inWaitUrlStack.add(new RequestInfo(urlOrPath, customedWidth, customedHeight));
+				}
+			}
+			startLoadImg();
 		}
 		return bitmap;
+	}
+	
+	private void startLoadImg()
+	{
+		if(! inWaitUrlStack.isEmpty() && loadingUrlList.size() < maxAsyncTaskNum)
+		{
+			int index = loadImgOrder == LoadImgOrder.LoadImgOrder_FIFO ? 0 : inWaitUrlStack.size() - 1;
+			RequestInfo requestInfo = inWaitUrlStack.remove(index);
+			new LoadImgTask(requestInfo.width, requestInfo.height).execute(requestInfo.url);
+			loadingUrlList.add(requestInfo.url);
+		}
+	}
+	
+	private int findUrlIndexInWaitList(String url)
+	{
+		int index = -1;
+		for(int i = 0; i < inWaitUrlStack.size(); i++)
+		{
+			if(inWaitUrlStack.get(i).url.equals(url))
+			{
+				index = i;
+				break;
+			}
+		}
+		return index;
 	}
 	
 	public static boolean isYoutubeUrl(String url)
@@ -97,7 +149,7 @@ public class LoadImgManager
 		return retVal;
 	}
 	
-	public static boolean isValideURL(String url)
+	private boolean isValideURL(String url)
 	{
 		boolean retVal = false;
 		if(url != null)
@@ -106,11 +158,18 @@ public class LoadImgManager
 		return retVal;
 	}
 	
-	private String getCompleteFilePath(String filePath)
+	private String tryGetYouTubeThumbnailUrl(String url)
 	{
-		if(filePath != null && !filePath.startsWith(APP_FOLDER_FILE_PATH) && !filePath.startsWith(EXTERN_FOLDER_FILE_PATH))
-			return EXTERN_FOLDER_FILE_PATH + filePath;
-		return filePath;
+		String thumbnail = null;
+		if(isValideURL(url) && (url.startsWith("http://www.youtube.com") || url.startsWith("https://www.youtube.com") || url.startsWith("www.youtube.com")))
+		{
+			int start = url.indexOf("?v=");
+			if(start > 0)
+			{
+				thumbnail = "http://img.youtube.com/vi/"+url.substring(start, url.length())+"/0.jpg";
+			}
+		}
+		return thumbnail;
 	}
 
 	/****************************************************************/
@@ -141,37 +200,38 @@ public class LoadImgManager
 				if(!isValideURL(urlOrPath)) // load image from SD card
 				{
 					Log.d(TAG, "Local Img load request for file path: "+urlOrPath);
-					String completeFilePath = getCompleteFilePath(urlOrPath);
+					
 					if(urlOrPath.toLowerCase(Locale.US).endsWith(".mp4"))
 					{
-						retVal = loadVideoThumbnail(completeFilePath, customedWidth, customedHeight);
+						retVal = loadVideoThumbnail(urlOrPath, customedWidth, customedHeight);
 					}
 					else 
 					{
 				        options.inJustDecodeBounds = true;
-				        BitmapFactory.decodeFile(completeFilePath, options);
+				        BitmapFactory.decodeFile(urlOrPath, options);
 				        setupBitmapSampleSize(options, customedWidth, customedHeight);
-				        return BitmapFactory.decodeFile(completeFilePath, options);
+				        return BitmapFactory.decodeFile(urlOrPath, options);
 					}
-				}
-				else // download image from Internet
+				} else // download image from Internet
 				{
 					Log.d(TAG, "new img download request for url: "+urlOrPath);
 					try 
 					{
 						URL url ;
-						if (isYoutubeUrl(urlOrPath))
-							//url = new URL(ARImageUtils.getYoutubeVideoImgUrl(urlOrPath));
+						String realImgUrl = tryGetYouTubeThumbnailUrl(urlOrPath);
+						if (realImgUrl != null)
+						{
+							url = new URL(realImgUrl);
+						} else
+						{
 							url = new URL(urlOrPath);
-						else
-							url = new URL(urlOrPath);
+						}
 						
 						if(customedHeight == -1)
 						{
 							retVal = BitmapFactory.decodeStream(url.openConnection().getInputStream());
 							Log.d(TAG, "use image origin size...");
-						}
-						else 
+						} else 
 						{
 							options.inJustDecodeBounds = true;
 							BitmapFactory.decodeStream(url.openConnection().getInputStream(), null, options);
@@ -191,18 +251,16 @@ public class LoadImgManager
 		@Override
 		protected void onPostExecute(Bitmap result) 
 		{
-			if(urlOrPath != null && drawableCache != null && urlInProcessList != null)
+			if(urlOrPath != null)
 			{
 				Log.i(TAG, "Img Load request is finished for url: "+urlOrPath+" with result:"+(result!=null));
 				if(result != null)
-					drawableCache.put(urlOrPath, result);
-				else
-					noImgUrlList.add(urlOrPath);
+					loadedBitmaps.put(urlOrPath, result);
 				
-				urlInProcessList.remove(urlOrPath);
-				
+				loadingUrlList.remove(urlOrPath);
 				dispatchImgLoadedEvent(urlOrPath, result);
 			}
+			startLoadImg();
 		}
 	}
 	
@@ -293,20 +351,16 @@ public class LoadImgManager
         options.inJustDecodeBounds = false;
     }
 	
+	@Override
 	public void dispose()
 	{
 		if(listeners != null)
 			listeners.clear();
-		if(drawableCache != null)
-			drawableCache.clear();
-		if(urlInProcessList != null)
-			urlInProcessList.clear();
-		if(noImgUrlList != null)
-			noImgUrlList.clear();
-	}
-	
-	public static interface onDownloadImgReadyListener
-	{
-		public boolean onDownloadImgReady(String url, Bitmap bitmap);
+		if(loadedBitmaps != null)
+			loadedBitmaps.evictAll();
+		if(inWaitUrlStack != null)
+			inWaitUrlStack.clear();
+		if(loadingUrlList != null)
+			loadingUrlList.clear();
 	}
 }
