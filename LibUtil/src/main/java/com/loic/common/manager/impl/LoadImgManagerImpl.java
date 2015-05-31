@@ -18,7 +18,7 @@ import android.util.Patterns;
 
 import com.loic.common.manager.LoadImgManager;
 
-class LoadImgManagerImpl extends LoadImgManager
+public class LoadImgManagerImpl extends LoadImgManager
 {
 	private static final String TAG = LoadImgManagerImpl.class.getSimpleName();
 
