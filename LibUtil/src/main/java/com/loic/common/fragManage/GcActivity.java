@@ -75,8 +75,7 @@ public abstract class GcActivity extends ActionBarActivity
 			}
 		});
         mDrawerLayout.setDrawerListener(mDrawerToggle);
-        
-        setCenterFragment(getInitCenterFragment(GcFragment.class));
+
     }
     
     public void setLeftMenuEnable(boolean enable)
@@ -107,6 +106,15 @@ public abstract class GcActivity extends ActionBarActivity
     	{
     		((MultiFragmentManager)centerFragment).onOpenElement(menuElementItem, position);
 		}
+    }
+
+    protected void setCenterFragment(GcFragment fragment)
+    {
+        if(fragment != null)
+        {
+            centerFragment = fragment;
+            getSupportFragmentManager().beginTransaction().replace(R.id.content_frame, fragment).commit();
+        }
     }
     
     protected void setCenterFragment(Class<? extends GcFragment> fragmentClass)

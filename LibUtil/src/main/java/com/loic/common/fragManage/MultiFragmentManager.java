@@ -37,13 +37,6 @@ public class MultiFragmentManager extends GcFragment
     
     protected Class<? extends GcFragment> fragmentClassInShowing;
 
-	/*
-	 * _________________
-	 *
-	 * Static Methods
-	 * _________________
-	 */
-
 	/**
 	 * Returns a unique fragment tag
 	 *
@@ -737,12 +730,6 @@ public class MultiFragmentManager extends GcFragment
     		showGcFragment(fragmentClass, false, null);
     	}
     }
-	/*
-	 * _________________
-	 *
-	 * Fragments handling methods : dump
-	 * _________________
-	 */
 
 	/**
 	 * Prints the full state of the MultiFragmentController

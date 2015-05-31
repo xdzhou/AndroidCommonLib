@@ -175,8 +175,7 @@ public class FileUtils
 
     /**
      * write file
-     * 
-     * @param file the file to be opened for writing.
+     *
      * @param stream the input stream
      * @param append if <code>true</code>, then bytes will be written to the end of the file rather than the beginning
      * @return return true
@@ -410,7 +409,6 @@ public class FileUtils
      *         <ul>
      *         <li>if {@link FileUtils#getFolderName(String)} return null, return false</li>
      *         <li>if target directory already exists, return true</li>
-     *         <li>return {@link java.io.File#makeFolder}</li>
      *         </ul>
      */
     public static boolean makeDirs(String filePath) 
