@@ -1,4 +1,4 @@
-package com.loic.common.manager;
+package com.loic.common.manager.impl;
 
 import java.io.File;
 import java.net.URL;
@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
@@ -17,7 +16,9 @@ import android.support.v4.util.LruCache;
 import android.util.Log;
 import android.util.Patterns;
 
-public class LoadImgManagerImpl extends LoadImgManager
+import com.loic.common.manager.LoadImgManager;
+
+class LoadImgManagerImpl extends LoadImgManager
 {
 	private static final String TAG = LoadImgManagerImpl.class.getSimpleName();
 
@@ -269,7 +270,6 @@ public class LoadImgManagerImpl extends LoadImgManager
      * @param path Video path
      * @return Requested bitmap or null if video cannot be decoded
      */
-	@SuppressLint("NewApi")
 	private Bitmap loadVideoThumbnail(String path, int customedWidth, int customedHeight) 
 	{
         Bitmap bitmap = null;
