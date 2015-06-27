@@ -8,8 +8,8 @@ public abstract class SqliteHelper extends SQLiteOpenHelper
 {
     public SqliteHelper(Context context, String name, CursorFactory factory,int version) 
     {
-		super(context, name, factory, version);
-	}
+        super(context, name, factory, version);
+    }
     
     protected abstract String getModelPackage();
 }

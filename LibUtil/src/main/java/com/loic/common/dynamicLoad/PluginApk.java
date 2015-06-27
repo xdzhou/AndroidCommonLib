@@ -2,8 +2,8 @@ package com.loic.common.dynamicLoad;
 
 import android.content.pm.PackageInfo;
 import android.content.res.Resources;
-import android.os.Parcel;
 import android.util.Log;
+import android.view.Menu;
 
 import com.loic.common.fragManage.GcFragment;
 
@@ -120,4 +120,15 @@ public class PluginApk
         return fragClassName;
     }
 
+    @Override
+    public GcFragment getFragment()
+    {
+        return getPluginFragment();
+    }
+
+    @Override
+    public Menu setMenuInfo(Menu menu)
+    {
+        return menu;
+    }
 }

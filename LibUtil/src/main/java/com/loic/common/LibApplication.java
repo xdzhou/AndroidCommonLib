@@ -5,7 +5,7 @@ import android.content.Context;
 
 public class LibApplication extends Application 
 {
-	private static Context context;
+    private static Context context;
     private static LibApplication globalApplication;
 
     public void onCreate()

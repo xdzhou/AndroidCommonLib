@@ -20,136 +20,136 @@ import android.widget.FrameLayout;
 
 public class MultiFragmentManager extends GcFragment
 {
-	private static final String TAG = MultiFragmentManager.class.getSimpleName();
-	private static final String MFM_fragement_KeyList_Key = "MFM_fragement_KeyList_Key";
+    private static final String TAG = MultiFragmentManager.class.getSimpleName();
+    private static final String MFM_fragement_KeyList_Key = "MFM_fragement_KeyList_Key";
     private static final String MFM_Force_Landscape_Key = "MFM_Force_Landscape_Key";
     private static final String MFM_Fragment_Inshowing_Key = "MFM_Fragment_Inshowing_Key";
     
-	private static int keyindex = 0;
+    private static int keyindex = 0;
 
-	private ArrayList<String> fragmentKeys;
-	private List<GcFragment> preLoadedFragments;
-	private boolean alreadyLoaded = false;
+    private ArrayList<String> fragmentKeys;
+    private List<GcFragment> preLoadedFragments;
+    private boolean alreadyLoaded = false;
     private boolean forceLandscape = false;
-	private FrameLayout parent;
+    private FrameLayout parent;
 
     private FragmentManager mChildFragmentManager;
     
     protected Class<? extends GcFragment> fragmentClassInShowing;
 
-	/**
-	 * Returns a unique fragment tag
-	 *
-	 * @param frag
-	 *            the fragment from which the tag will be created
-	 * @return the unique tag
-	 */
-	private static String getTagForFragment(GcFragment frag)
-	{
-		String retVal;
-		synchronized (MultiFragmentManager.class)
-		{
-			StringBuilder builder = new StringBuilder();
-			builder.append(MultiFragmentManager.class.getName());
-			builder.append(".");
-			builder.append(frag.getClass().getSimpleName());
-			builder.append(".");
-			builder.append(MultiFragmentManager.keyindex);
-			retVal = builder.toString();
-			++MultiFragmentManager.keyindex;
-		}
-		return retVal;
-	}
+    /**
+     * Returns a unique fragment tag
+     *
+     * @param frag
+     *            the fragment from which the tag will be created
+     * @return the unique tag
+     */
+    private static String getTagForFragment(GcFragment frag)
+    {
+        String retVal;
+        synchronized (MultiFragmentManager.class)
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.append(MultiFragmentManager.class.getName());
+            builder.append(".");
+            builder.append(frag.getClass().getSimpleName());
+            builder.append(".");
+            builder.append(MultiFragmentManager.keyindex);
+            retVal = builder.toString();
+            ++MultiFragmentManager.keyindex;
+        }
+        return retVal;
+    }
 
-	/*
-	 * _________________
-	 *
-	 * Constructors _________________
-	 */
+    /*
+     * _________________
+     *
+     * Constructors _________________
+     */
 
-	/**
-	 * MultiLayerFragment default constructor.
-	 */
-	public MultiFragmentManager()
-	{
-		super();
-		this.preLoadedFragments = new ArrayList<GcFragment>();
-		this.fragmentKeys = new ArrayList<String>();
-	}
+    /**
+     * MultiLayerFragment default constructor.
+     */
+    public MultiFragmentManager()
+    {
+        super();
+        this.preLoadedFragments = new ArrayList<GcFragment>();
+        this.fragmentKeys = new ArrayList<String>();
+    }
 
-	/*
-	 * _________________
-	 *
-	 * Fragment Lifecycle
-	 * _________________
-	 */
+    /*
+     * _________________
+     *
+     * Fragment Lifecycle
+     * _________________
+     */
 
-	@Override
-	public void onCreate(Bundle savedInstanceState)
-	{
-	    super.onCreate(savedInstanceState);
-	    if(savedInstanceState != null)
-	    {
-	    	String fragClassName = savedInstanceState.getString(MFM_Fragment_Inshowing_Key, null);
-		    if(fragClassName != null)
-		    {
-		    	try 
-		    	{
-					fragmentClassInShowing = (Class<? extends GcFragment>) Class.forName(fragClassName);
-				} 
-		    	catch (ClassNotFoundException e) 
-		    	{
-					e.printStackTrace();
-				}
-		    }
-	    }
-	}
+    @Override
+    public void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        if(savedInstanceState != null)
+        {
+            String fragClassName = savedInstanceState.getString(MFM_Fragment_Inshowing_Key, null);
+            if(fragClassName != null)
+            {
+                try 
+                {
+                    fragmentClassInShowing = (Class<? extends GcFragment>) Class.forName(fragClassName);
+                } 
+                catch (ClassNotFoundException e) 
+                {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 
-	/**
-	 * Prepare from an orientation change
-	 *
-	 * @param outState
-	 *            the bundle in which the private settings will be set
-	 */
-	@Override
-	public void onSaveInstanceState(Bundle outState)
-	{
-		super.onSaveInstanceState(outState);
-		outState.putStringArrayList(MFM_fragement_KeyList_Key, this.fragmentKeys);
+    /**
+     * Prepare from an orientation change
+     *
+     * @param outState
+     *            the bundle in which the private settings will be set
+     */
+    @Override
+    public void onSaveInstanceState(Bundle outState)
+    {
+        super.onSaveInstanceState(outState);
+        outState.putStringArrayList(MFM_fragement_KeyList_Key, this.fragmentKeys);
         outState.putBoolean(MFM_Force_Landscape_Key, forceLandscape);
         if(fragmentClassInShowing != null)
-        	outState.putString(MFM_Fragment_Inshowing_Key, fragmentClassInShowing.getName());
-	}
+            outState.putString(MFM_Fragment_Inshowing_Key, fragmentClassInShowing.getName());
+    }
 
-	/**
-	 * Life cycle method called when the view has to be created
-	 *
-	 * @param inflater
-	 *            the layout inflater from the container
-	 * @param container
-	 *            the view which will contain this fragment's view
-	 * @param savedInstanceState
-	 *            the bundle from orientation change recovery
-	 * @return View the created view.
-	 */
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
-	{
-		View view = inflater.inflate(R.layout.multifragmentcontroller, container, false);
-		//parent = container;
+    /**
+     * Life cycle method called when the view has to be created
+     *
+     * @param inflater
+     *            the layout inflater from the container
+     * @param container
+     *            the view which will contain this fragment's view
+     * @param savedInstanceState
+     *            the bundle from orientation change recovery
+     * @return View the created view.
+     */
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    {
+        View view = inflater.inflate(R.layout.multifragmentcontroller, container, false);
+        //parent = container;
         parent = (FrameLayout) view.findViewById(R.id.mfc_relativelayout);
 
         mChildFragmentManager = getChildFragmentManager();
 
-		if (savedInstanceState != null)
-		{
+        if (savedInstanceState != null)
+        {
             this.forceLandscape = savedInstanceState.getBoolean(MFM_Force_Landscape_Key);
             this.fragmentKeys = savedInstanceState.getStringArrayList(MFM_fragement_KeyList_Key);
             if (!this.forceLandscape || DeviceUtils.isLandscape())
             {
                 refreshFragments();
             }
-		}
+        }
 
         if (this.forceLandscape && !DeviceUtils.isLandscape())
         {
@@ -176,11 +176,11 @@ public class MultiFragmentManager extends GcFragment
             }
         }
 
-		this.alreadyLoaded = true;
-		return view;
-	}
+        this.alreadyLoaded = true;
+        return view;
+    }
 
-	private void refreshFragments()
+    private void refreshFragments()
     {
         for (String fragTag : this.fragmentKeys) 
         {
@@ -200,74 +200,74 @@ public class MultiFragmentManager extends GcFragment
         this.mChildFragmentManager.executePendingTransactions();
     }
 
-	/*
-	 * _________________
-	 *
-	 * Fragments handling methods : get
-	 * _________________
-	 */
+    /*
+     * _________________
+     *
+     * Fragments handling methods : get
+     * _________________
+     */
 
-	/**
-	 * Return the first fragment of the corresponding class
-	 *
-	 * @param fragClass
-	 *            the class type of the fragment we are looking for
-	 * @return Fragment the fragment of the given type
-	 */
-	@SuppressWarnings("unchecked")
-	public <T> T getFragmentOfClass(Class<T> fragClass)
-	{
-		T returnedFragment = null;
-		for (int i = 0; (returnedFragment == null) && (i < this.fragmentKeys.size()); ++i)
-		{
-			String fragmentKey = this.fragmentKeys.get(i);
-			GcFragment frag = (GcFragment) this.mChildFragmentManager.findFragmentByTag(fragmentKey);
-			if (fragClass.isInstance(frag))
-			{
-				returnedFragment = (T) frag;
-			}
-		}
-		return returnedFragment;
-	}
-	
-	public <T> String getFragmentTagOfClass(Class<T> fragClass)
-	{
-		String tag = null;
-		for (int i = 0; (tag == null) && (i < this.fragmentKeys.size()); ++i)
-		{
-			String fragmentKey = this.fragmentKeys.get(i);
-			GcFragment frag = (GcFragment) this.mChildFragmentManager.findFragmentByTag(fragmentKey);
-			if (fragClass.isInstance(frag))
-			{
-				tag = fragmentKey;
-			}
-		}
-		return tag;
-	}
+    /**
+     * Return the first fragment of the corresponding class
+     *
+     * @param fragClass
+     *            the class type of the fragment we are looking for
+     * @return Fragment the fragment of the given type
+     */
+    @SuppressWarnings("unchecked")
+    public <T> T getFragmentOfClass(Class<T> fragClass)
+    {
+        T returnedFragment = null;
+        for (int i = 0; (returnedFragment == null) && (i < this.fragmentKeys.size()); ++i)
+        {
+            String fragmentKey = this.fragmentKeys.get(i);
+            GcFragment frag = (GcFragment) this.mChildFragmentManager.findFragmentByTag(fragmentKey);
+            if (fragClass.isInstance(frag))
+            {
+                returnedFragment = (T) frag;
+            }
+        }
+        return returnedFragment;
+    }
+    
+    public <T> String getFragmentTagOfClass(Class<T> fragClass)
+    {
+        String tag = null;
+        for (int i = 0; (tag == null) && (i < this.fragmentKeys.size()); ++i)
+        {
+            String fragmentKey = this.fragmentKeys.get(i);
+            GcFragment frag = (GcFragment) this.mChildFragmentManager.findFragmentByTag(fragmentKey);
+            if (fragClass.isInstance(frag))
+            {
+                tag = fragmentKey;
+            }
+        }
+        return tag;
+    }
 
-	/**
-	 * Return the fragment with the specified tag.
-	 * 
-	 * @param tag the tag identifying the fragment 
-	 * @return the fragment associated with the given tag or null if no fragment
-	 * exists with tag.
-	 */
-	public GcFragment getFragmentWithTag(String tag)
-	{
-	    GcFragment frag = null;
+    /**
+     * Return the fragment with the specified tag.
+     * 
+     * @param tag the tag identifying the fragment 
+     * @return the fragment associated with the given tag or null if no fragment
+     * exists with tag.
+     */
+    public GcFragment getFragmentWithTag(String tag)
+    {
+        GcFragment frag = null;
         if (this.fragmentKeys.contains(tag))
         {
             frag = (GcFragment) this.mChildFragmentManager.findFragmentByTag(tag);
         }
         return frag;
-	}
-	
-	/*
-	 * _________________
-	 *
-	 * Fragments handling methods : insert
-	 * _________________
-	 */
+    }
+    
+    /*
+     * _________________
+     *
+     * Fragments handling methods : insert
+     * _________________
+     */
 
     /**
      * Insert a fragment at last position with the given tag
@@ -282,17 +282,17 @@ public class MultiFragmentManager extends GcFragment
     }
 
 
-	/**
-	 * Insert a fragment at last position
-	 *
-	 * @param frag
-	 *            the fragment to add
-	 * @return String the key off the added fragment
-	 */
-	public String insertFragment(GcFragment frag)
-	{
-		return this.insertFragmentAtPosition(frag, 0);
-	}
+    /**
+     * Insert a fragment at last position
+     *
+     * @param frag
+     *            the fragment to add
+     * @return String the key off the added fragment
+     */
+    public String insertFragment(GcFragment frag)
+    {
+        return this.insertFragmentAtPosition(frag, 0);
+    }
 
     /**
      * Insert a fragment at the given position with the given tag
@@ -330,51 +330,51 @@ public class MultiFragmentManager extends GcFragment
         return fragTag;
     }
 
-	/**
-	 * Insert a fragment at the given position
-	 *
-	 * @param frag
-	 *            the fragment to add
-	 * @param position
-	 *            the position at which the fragment will be added
-	 * @return String the key off the added fragment
-	 */
-	public String insertFragmentAtPosition(GcFragment frag, int position)
-	{
-		String fragTag = null;
-		if (frag != null)
-		{
-			// 0 <= position <= fragmentKeys.size()
-			position = (position > this.fragmentKeys.size()) ? this.fragmentKeys.size() : ((position < 0) ? 0 : position);
-			fragTag = getTagForFragment(frag);
+    /**
+     * Insert a fragment at the given position
+     *
+     * @param frag
+     *            the fragment to add
+     * @param position
+     *            the position at which the fragment will be added
+     * @return String the key off the added fragment
+     */
+    public String insertFragmentAtPosition(GcFragment frag, int position)
+    {
+        String fragTag = null;
+        if (frag != null)
+        {
+            // 0 <= position <= fragmentKeys.size()
+            position = (position > this.fragmentKeys.size()) ? this.fragmentKeys.size() : ((position < 0) ? 0 : position);
+            fragTag = getTagForFragment(frag);
 
-			if (this.alreadyLoaded)
-			{
-				this.attachFragmentWithTagAtPosition(frag, fragTag, position, false);
-				this.fragmentKeys.add(position, fragTag);
+            if (this.alreadyLoaded)
+            {
+                this.attachFragmentWithTagAtPosition(frag, fragTag, position, false);
+                this.fragmentKeys.add(position, fragTag);
                 this.mChildFragmentManager.executePendingTransactions();
-			}
-			else
-			{
-				this.fragmentKeys.add(position, fragTag);
-				this.preLoadedFragments.add(position, frag);
-			}
-		}
-		return fragTag;
-	}
+            }
+            else
+            {
+                this.fragmentKeys.add(position, fragTag);
+                this.preLoadedFragments.add(position, frag);
+            }
+        }
+        return fragTag;
+    }
 
-	/**
-	 * Attach a fragment at the given position with the given tag in the view
-	 *
-	 * @param frag
-	 *            the fragment to add
-	 * @param fragTag
-	 *            the fragment's tag in fragmentManager
-	 * @param position
-	 *            the position at which the fragment will be added
-	 * @param hasToDetach
-	 *            specifies if previously added fragments have to be detached/reattached
-	 */
+    /**
+     * Attach a fragment at the given position with the given tag in the view
+     *
+     * @param frag
+     *            the fragment to add
+     * @param fragTag
+     *            the fragment's tag in fragmentManager
+     * @param position
+     *            the position at which the fragment will be added
+     * @param hasToDetach
+     *            specifies if previously added fragments have to be detached/reattached
+     */
     private void attachFragmentWithTagAtPosition(GcFragment frag, String fragTag, int position, boolean hasToDetach)
     {
         if (getActivity() != null)
@@ -409,89 +409,89 @@ public class MultiFragmentManager extends GcFragment
         }
     }
 
-	/*
-	 * _________________
-	 *
-	 * Fragments handling methods : remove
-	 * _________________
-	 */
+    /*
+     * _________________
+     *
+     * Fragments handling methods : remove
+     * _________________
+     */
 
-	/**
-	 * Remove the fragment at last position
-	 *
-	 * @return String the key off the deleted fragment
-	 */
-	public String removeLastFragment()
-	{
-		return this.removeFragmentAtPosition(this.fragmentKeys.size());
-	}
+    /**
+     * Remove the fragment at last position
+     *
+     * @return String the key off the deleted fragment
+     */
+    public String removeLastFragment()
+    {
+        return this.removeFragmentAtPosition(this.fragmentKeys.size());
+    }
 
-	/**
-	 * Remove the fragment at given position position
-	 *
-	 * @param position
-	 *            the position at which the fragment will be removed
-	 * @return String the key off the deleted fragment
-	 */
-	public String removeFragmentAtPosition(int position)
-	{
-		String fragTag = null;
-		if (this.fragmentKeys != null && this.fragmentKeys.size() > 0)
-		{
-			// 0 <= position <= fragmentKeys.size() - 1
-			position = (position >= this.fragmentKeys.size()) ? (this.fragmentKeys.size() - 1) : ((position < 0) ? 0 : position);
-			fragTag = this.fragmentKeys.get(position);
+    /**
+     * Remove the fragment at given position position
+     *
+     * @param position
+     *            the position at which the fragment will be removed
+     * @return String the key off the deleted fragment
+     */
+    public String removeFragmentAtPosition(int position)
+    {
+        String fragTag = null;
+        if (this.fragmentKeys != null && this.fragmentKeys.size() > 0)
+        {
+            // 0 <= position <= fragmentKeys.size() - 1
+            position = (position >= this.fragmentKeys.size()) ? (this.fragmentKeys.size() - 1) : ((position < 0) ? 0 : position);
+            fragTag = this.fragmentKeys.get(position);
 
-			if (this.alreadyLoaded)
-			{
-				GcFragment fragToDelete = (GcFragment) this.mChildFragmentManager.findFragmentByTag(fragTag);
-				FragmentTransaction ft = this.mChildFragmentManager.beginTransaction();
-			}
-			else
-			{
-				this.preLoadedFragments.remove(position);
-			}
-			this.fragmentKeys.remove(position);
-		}
-		return fragTag;
-	}
+            if (this.alreadyLoaded)
+            {
+                GcFragment fragToDelete = (GcFragment) this.mChildFragmentManager.findFragmentByTag(fragTag);
+                FragmentTransaction ft = this.mChildFragmentManager.beginTransaction();
+            }
+            else
+            {
+                this.preLoadedFragments.remove(position);
+            }
+            this.fragmentKeys.remove(position);
+        }
+        return fragTag;
+    }
 
-	/**
-	 * Get the fragment at given position
-	 *
-	 * @param position
-	 *            the position of the fragment
-	 * @return String the returned fragment
-	 */
-	public GcFragment getFragmentAtPosition(int position)
-	{
-	    GcFragment retFrag = null;
-	    if (this.fragmentKeys != null && this.fragmentKeys.size() > 0)
-	    {
-	        // 0 <= position <= fragmentKeys.size() - 1
-	        position = (position >= this.fragmentKeys.size()) ? (this.fragmentKeys.size() - 1) : ((position < 0) ? 0 : position);
-	        String fragTag = this.fragmentKeys.get(position);
+    /**
+     * Get the fragment at given position
+     *
+     * @param position
+     *            the position of the fragment
+     * @return String the returned fragment
+     */
+    public GcFragment getFragmentAtPosition(int position)
+    {
+        GcFragment retFrag = null;
+        if (this.fragmentKeys != null && this.fragmentKeys.size() > 0)
+        {
+            // 0 <= position <= fragmentKeys.size() - 1
+            position = (position >= this.fragmentKeys.size()) ? (this.fragmentKeys.size() - 1) : ((position < 0) ? 0 : position);
+            String fragTag = this.fragmentKeys.get(position);
 
-	        if (this.alreadyLoaded)
-	        {
-	            GcFragment fragToDelete = (GcFragment) this.mChildFragmentManager.findFragmentByTag(fragTag);
-	            if (fragToDelete != null)
-	            {
-	                retFrag = fragToDelete;
-	            }
-	            else
-	            {
-	                Log.w(TAG, "Can't get fragment at position: [" + position + "] with Tag: [" + fragTag + "]");
-	            }
+            if (this.alreadyLoaded)
+            {
+                GcFragment fragToDelete = (GcFragment) this.mChildFragmentManager.findFragmentByTag(fragTag);
+                if (fragToDelete != null)
+                {
+                    retFrag = fragToDelete;
+                }
+                else
+                {
+                    Log.w(TAG, "Can't get fragment at position: [" + position + "] with Tag: [" + fragTag + "]");
+                }
 
-	        }
-	        else
-	        {
-	            retFrag = this.preLoadedFragments.get(position);
-	        }
-	    }
-	    return retFrag;
-	}
+            }
+            else
+            {
+                retFrag = this.preLoadedFragments.get(position);
+            }
+        }
+        return retFrag;
+    }
 
     /**
      * Remove fragment with given tag
@@ -514,23 +514,23 @@ public class MultiFragmentManager extends GcFragment
         }
     }
 
-	/*
-	 * _________________
-	 *
-	 * Fragments handling methods : show
-	 * _________________
-	 */
+    /*
+     * _________________
+     *
+     * Fragments handling methods : show
+     * _________________
+     */
 
-	/**
-	 * Show all hidden fragments
-	 */
-	public void showAllFragments()
-	{
-		for (int i = 0; i < this.fragmentKeys.size(); ++i)
-		{
-			this.showFragmentAtIndex(i);
-		}
-	}
+    /**
+     * Show all hidden fragments
+     */
+    public void showAllFragments()
+    {
+        for (int i = 0; i < this.fragmentKeys.size(); ++i)
+        {
+            this.showFragmentAtIndex(i);
+        }
+    }
 
     /**
      * Show fragment at given position
@@ -561,12 +561,12 @@ public class MultiFragmentManager extends GcFragment
     
     public void showFragment(GcFragment frag)
     {
-    	if(frag != null)
-    	{
-    		FragmentTransaction ft = this.mChildFragmentManager.beginTransaction();
+        if(frag != null)
+        {
+            FragmentTransaction ft = this.mChildFragmentManager.beginTransaction();
             ft.show(frag).commit();
             this.mChildFragmentManager.executePendingTransactions();
-    	}
+        }
     }
 
     /**
@@ -589,12 +589,12 @@ public class MultiFragmentManager extends GcFragment
         }
     }
 
-	/*
-	 * _________________
-	 *
-	 * Fragments handling methods : hide
-	 * _________________
-	 */
+    /*
+     * _________________
+     *
+     * Fragments handling methods : hide
+     * _________________
+     */
 
     /**
      * Hide fragment at given position
@@ -645,104 +645,104 @@ public class MultiFragmentManager extends GcFragment
     }
     
     /*
-	 * _________________
-	 *
-	 * new feature
-	 * _________________
-	 */
+     * _________________
+     *
+     * new feature
+     * _________________
+     */
     public void showGcFragment(Class<? extends GcFragment> fragmentClass, boolean needRemoveAll, Bundle data)
     {
-    	String fragTag = getFragmentTagOfClass(fragmentClass);
-    	
-    	for(String tag : fragmentKeys)
-    	{
-    		if(! tag.equals(fragTag))
-    		{
-    			if(needRemoveAll)
-        		{
-        			removeFragmentWithTag(tag);
-        		}
-        		else
-        		{
-        			hideFragmentWithTag(tag);
-        		}
-    		}
-    	}
-    	
-    	GcFragment fragment = getFragmentOfClass(fragmentClass);
-    	if(fragment == null)
-    	{
-    		try 
-    		{
-				fragment = fragmentClass.newInstance();
-				fragment.setArguments(data == null ? new Bundle() : data);
-				insertFragment(fragment);
-			} 
-    		catch (java.lang.InstantiationException e) 
-    		{
-				e.printStackTrace();
-			} 
-    		catch (IllegalAccessException e) 
-    		{
-				e.printStackTrace();
-			}
-    	}
-    	else 
-    	{
-    		if(data != null)
-    		{
-    			Bundle oldData = fragment.getArguments();
-        		oldData.clear();
-        		oldData.putAll(data);
-    		}
-    		showFragment(fragment);
-		}
-    	fragmentClassInShowing = fragment.getClass();
+        String fragTag = getFragmentTagOfClass(fragmentClass);
+        
+        for(String tag : fragmentKeys)
+        {
+            if(! tag.equals(fragTag))
+            {
+                if(needRemoveAll)
+                {
+                    removeFragmentWithTag(tag);
+                }
+                else
+                {
+                    hideFragmentWithTag(tag);
+                }
+            }
+        }
+        
+        GcFragment fragment = getFragmentOfClass(fragmentClass);
+        if(fragment == null)
+        {
+            try 
+            {
+                fragment = fragmentClass.newInstance();
+                fragment.setArguments(data == null ? new Bundle() : data);
+                insertFragment(fragment);
+            } 
+            catch (java.lang.InstantiationException e) 
+            {
+                e.printStackTrace();
+            } 
+            catch (IllegalAccessException e) 
+            {
+                e.printStackTrace();
+            }
+        }
+        else 
+        {
+            if(data != null)
+            {
+                Bundle oldData = fragment.getArguments();
+                oldData.clear();
+                oldData.putAll(data);
+            }
+            showFragment(fragment);
+        }
+        fragmentClassInShowing = fragment.getClass();
     }
     
     public void gobackToGcFragment(Class<? extends GcFragment> fragmentClass)
     {
-    	Class<? extends GcFragment> callerClass = null;
-    	StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
-    	for(StackTraceElement element : stackTraceElements)
-    	{
-    		String className = element.getClassName().split("\\$")[0];
-    		try 
-    		{
-				if(GcFragment.class.isInstance(Class.forName(className)))
-				{
-					callerClass = (Class<? extends GcFragment>) Class.forName(className);
-					break;
-				}
-			} 
-    		catch (ClassNotFoundException e) 
-    		{
-				e.printStackTrace();
-			}
-    	}
-    	if(callerClass != null)
-    	{
-    		Log.d(TAG, "find caller : "+callerClass.getSimpleName());
-    		//remove caller fragment
-    		String callerTag = getFragmentTagOfClass(callerClass);
-    		if(callerTag != null)
-    			removeFragmentWithTag(callerTag);
-    		showGcFragment(fragmentClass, false, null);
-    	}
+        Class<? extends GcFragment> callerClass = null;
+        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+        for(StackTraceElement element : stackTraceElements)
+        {
+            String className = element.getClassName().split("\\$")[0];
+            try 
+            {
+                if(GcFragment.class.isInstance(Class.forName(className)))
+                {
+                    callerClass = (Class<? extends GcFragment>) Class.forName(className);
+                    break;
+                }
+            } 
+            catch (ClassNotFoundException e) 
+            {
+                e.printStackTrace();
+            }
+        }
+        if(callerClass != null)
+        {
+            Log.d(TAG, "find caller : "+callerClass.getSimpleName());
+            //remove caller fragment
+            String callerTag = getFragmentTagOfClass(callerClass);
+            if(callerTag != null)
+                removeFragmentWithTag(callerTag);
+            showGcFragment(fragmentClass, false, null);
+        }
     }
 
-	/**
-	 * Prints the full state of the MultiFragmentController
-	 */
-	public void dump()
-	{
-		for (int i = 0; i < this.fragmentKeys.size(); ++i)
-		{
-			Log.v(TAG, "Layer n°"+i);
-			String fragmentKey = this.fragmentKeys.get(i);
-			Log.v(TAG, "    key = " + fragmentKey);
-			GcFragment frag = (GcFragment) this.mChildFragmentManager.findFragmentByTag(fragmentKey);
-			Log.v(TAG, "    fragment = " + frag);
+    /**
+     * Prints the full state of the MultiFragmentController
+     */
+    public void dump()
+    {
+        for (int i = 0; i < this.fragmentKeys.size(); ++i)
+        {
+            Log.v(TAG, "Layer n°"+i);
+            String fragmentKey = this.fragmentKeys.get(i);
+            Log.v(TAG, "    key = " + fragmentKey);
+            GcFragment frag = (GcFragment) this.mChildFragmentManager.findFragmentByTag(fragmentKey);
+            Log.v(TAG, "    fragment = " + frag);
         }
     }
 
@@ -843,15 +843,16 @@ public class MultiFragmentManager extends GcFragment
 
         return consumed;
     }
+
     
     public boolean onOpenElement(MenuElementItem menuElementItem, int position)
     {
-    	if(menuElementItem != null && menuElementItem.fragmentClass != null && !fragmentClassInShowing.isAssignableFrom(menuElementItem.fragmentClass))
-    	{
-    		showGcFragment(menuElementItem.fragmentClass, true, null);
-    		return true;
-    	}
-    		
-    	return false;
+        if(menuElementItem != null && menuElementItem.fragmentClass != null && !fragmentClassInShowing.isAssignableFrom(menuElementItem.fragmentClass))
+        {
+            showGcFragment(menuElementItem.fragmentClass, true, null);
+            return true;
+        }
+            
+        return false;
     }
 }

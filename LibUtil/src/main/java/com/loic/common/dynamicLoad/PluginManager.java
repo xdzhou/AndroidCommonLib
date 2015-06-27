@@ -12,7 +12,6 @@ import com.loic.common.LibApplication;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
 
 import dalvik.system.DexClassLoader;
