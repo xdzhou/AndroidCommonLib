@@ -2,14 +2,15 @@ package com.loic.common.dynamicLoad;
 
 import android.content.pm.PackageInfo;
 import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
+import android.support.annotation.NonNull;
 import android.util.Log;
-import android.view.Menu;
 
 import com.loic.common.fragManage.GcFragment;
 
 import dalvik.system.DexClassLoader;
 
-public class PluginApk
+public class PluginApk implements IAppModule
 {
     private static final String TAG = PluginApk.class.getSimpleName();
 
@@ -19,7 +20,7 @@ public class PluginApk
     private Resources res;
     private DexClassLoader pluginClassLoader;
 
-    private Class<? extends GcFragment> pluginFragmentClass;
+    private IAppModule pluginModule;
 
     public PluginApk(String apkFilePath, PackageInfo packageInfo, Resources res, DexClassLoader pluginClassLoader)
     {
@@ -29,106 +30,171 @@ public class PluginApk
         this.pluginClassLoader = pluginClassLoader;
     }
 
-    /*
-        plugin name is saved in manifest : application / activity / label
+    public boolean checkPluginValide()
+    {
+        boolean valid = getPluginName() != null && getPluginModule() != null;
+        if(! valid)
+        {
+            dispose();
+        }
+        return valid;
+    }
+
+    public boolean isPluginClass (GcFragment frag)
+    {
+        return isPluginClass(frag.getClass());
+    }
+
+    public boolean isPluginClass (Class<? extends GcFragment> fragClass)
+    {
+        return (fragClass != null) && (fragClass.getClassLoader() == pluginClassLoader);
+    }
+
+    private IAppModule getPluginModule()
+    {
+        if(pluginModule == null)
+        {
+            try
+            {
+                Class<?> mClass = pluginClassLoader.loadClass(getPluginFrModuleClassName());
+                if(IAppModule.class.isAssignableFrom(mClass))
+                {
+                    pluginModule = (IAppModule) mClass.newInstance();
+                }
+                else
+                {
+                    Log.e(TAG, "Loaded class is not IAppModule : "+mClass.getName());
+                }
+            }
+            catch (ClassNotFoundException e)
+            {
+                e.printStackTrace();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+        return pluginModule;
+    }
+
+    /**
+     *  plugin name is saved in manifest : application / label
      */
-    public String getPluginName()
+    private String getPluginName()
     {
         String pluginName = null;
-        if(packageInfo != null && packageInfo.activities != null)
+        if(packageInfo != null && packageInfo.applicationInfo != null)
         {
-            int labelResID = packageInfo.activities[0].labelRes;
+            int labelResID = packageInfo.applicationInfo.labelRes;
             pluginName = res.getString(labelResID);
         }
         return pluginName;
     }
 
-    public Class<? extends GcFragment> getPluginFragmentClass()
-    {
-        if(pluginFragmentClass == null)
-        {
-            try
-            {
-                Class<?> mClass = pluginClassLoader.loadClass(getPluginFragmentClassName());
-                if(GcFragment.class.isAssignableFrom(mClass))
-                {
-                    pluginFragmentClass = (Class<? extends GcFragment>) mClass;
-                } else
-                {
-                    Log.e(TAG, "Loaded class is not GcFragment : "+mClass.getName());
-                }
-            }
-            catch (ClassNotFoundException e)
-            {
-                e.printStackTrace();
-            }
-        }
-        return pluginFragmentClass;
-    }
-
-    public GcFragment getPluginFragment()
-    {
-        if(pluginFragmentClass == null)
-        {
-            try
-            {
-                Class<?> mClass = pluginClassLoader.loadClass(getPluginFragmentClassName());
-                if(GcFragment.class.isAssignableFrom(mClass))
-                {
-                    pluginFragmentClass = (Class<? extends GcFragment>) mClass;
-                } else
-                {
-                    Log.e(TAG, "Loaded class is not GcFragment : "+mClass.getName());
-                }
-            }
-            catch (ClassNotFoundException e)
-            {
-                e.printStackTrace();
-            }
-        }
-
-        GcFragment frag = null;
-        if(pluginFragmentClass != null)
-        {
-            try
-            {
-                frag = pluginFragmentClass.newInstance();
-                frag.setPluginResource(this.res);
-            } catch (InstantiationException e)
-            {
-                e.printStackTrace();
-            } catch (IllegalAccessException e)
-            {
-                e.printStackTrace();
-            }
-        }
-
-        return frag;
-    }
-
-    /*
-        plugin Fragment Class Name is saved in manifest : application / activity / name
+    /**
+     *  plugin module Class Name is saved in manifest : application / name
+     *  @see IAppModule
      */
-    private String getPluginFragmentClassName()
+    private String getPluginFrModuleClassName()
     {
-        String fragClassName = null;
-        if(packageInfo != null && packageInfo.activities != null)
+        String moduleClassName = null;
+        if(packageInfo != null && packageInfo.applicationInfo != null)
         {
-            fragClassName = packageInfo.activities[0].name;
+            moduleClassName = packageInfo.applicationInfo.name;
         }
-        fragClassName = "com.sky.plugin.MainPlugin";
-        return fragClassName;
+        return moduleClassName;
+    }
+
+    public void dispose()
+    {
+        res = null;
+        pluginClassLoader = null;
+        pluginModule = null;
+        packageInfo = null;
+    }
+
+    /**
+     *  IAppModule implementation
+     *  @see IAppModule
+     */
+    @Override
+    public int size()
+    {
+        return pluginModule.size();
     }
 
     @Override
-    public GcFragment getFragment()
+    public int getItemID(int index)
     {
-        return getPluginFragment();
+        return pluginModule.getItemID(index);
     }
 
     @Override
-    public Menu setMenuInfo(Menu menu)
+    public int getItemNameResId(int fragId)
     {
-        return menu;
+        throw new UnsupportedOperationException("Not support for plugin");
+    }
+
+    @Override
+    public String getItemName(int fragId)
+    {
+        return res.getString(pluginModule.getItemNameResId(fragId));
+    }
+
+    @Override
+    public int getItemIconResId(int fragId)
+    {
+        throw new UnsupportedOperationException("Not support for plugin");
+    }
+
+    @Override
+    public Drawable getItemIcon(int fragId)
+    {
+        return res.getDrawable(pluginModule.getItemNameResId(fragId));
+    }
+
+    @Override
+    public Class<? extends GcFragment> getItemFragClass(int fragId)
+    {
+        return pluginModule.getItemFragClass(fragId);
+    }
+
+    @Override
+    public boolean getItemVisibility(int fragId)
+    {
+        return pluginModule.getItemVisibility(fragId);
+    }
+
+    @Override
+    public GcFragment onInitedFragment(GcFragment frag)
+    {
+        GcFragment initedFrag = pluginModule.onInitedFragment(frag);
+        initedFrag.setPluginResource(res);
+        return initedFrag;
+    }
+
+    @Override
+    public boolean isPlugin()
+    {
+        return true;
+    }
+
+    @Override
+    public int getAppModuleID()
+    {
+        return getPluginName().hashCode();
+    }
+
+    @Override
+    public int getModuleNameResId()
+    {
+        throw new UnsupportedOperationException("Not support for plugin");
+    }
+
+    @Override
+    public String getModuleName()
+    {
+        return getPluginName();
     }
 }

@@ -61,12 +61,6 @@ public class MultiFragmentManager extends GcFragment
         return retVal;
     }
 
-    /*
-     * _________________
-     *
-     * Constructors _________________
-     */
-
     /**
      * MultiLayerFragment default constructor.
      */
@@ -76,13 +70,6 @@ public class MultiFragmentManager extends GcFragment
         this.preLoadedFragments = new ArrayList<GcFragment>();
         this.fragmentKeys = new ArrayList<String>();
     }
-
-    /*
-     * _________________
-     *
-     * Fragment Lifecycle
-     * _________________
-     */
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -200,13 +187,6 @@ public class MultiFragmentManager extends GcFragment
         this.mChildFragmentManager.executePendingTransactions();
     }
 
-    /*
-     * _________________
-     *
-     * Fragments handling methods : get
-     * _________________
-     */
-
     /**
      * Return the first fragment of the corresponding class
      *
@@ -261,13 +241,6 @@ public class MultiFragmentManager extends GcFragment
         }
         return frag;
     }
-    
-    /*
-     * _________________
-     *
-     * Fragments handling methods : insert
-     * _________________
-     */
 
     /**
      * Insert a fragment at last position with the given tag
@@ -409,13 +382,6 @@ public class MultiFragmentManager extends GcFragment
         }
     }
 
-    /*
-     * _________________
-     *
-     * Fragments handling methods : remove
-     * _________________
-     */
-
     /**
      * Remove the fragment at last position
      *
@@ -514,13 +480,6 @@ public class MultiFragmentManager extends GcFragment
         }
     }
 
-    /*
-     * _________________
-     *
-     * Fragments handling methods : show
-     * _________________
-     */
-
     /**
      * Show all hidden fragments
      */
@@ -589,13 +548,6 @@ public class MultiFragmentManager extends GcFragment
         }
     }
 
-    /*
-     * _________________
-     *
-     * Fragments handling methods : hide
-     * _________________
-     */
-
     /**
      * Hide fragment at given position
      *
@@ -643,13 +595,7 @@ public class MultiFragmentManager extends GcFragment
             }
         }
     }
-    
-    /*
-     * _________________
-     *
-     * new feature
-     * _________________
-     */
+
     public void showGcFragment(Class<? extends GcFragment> fragmentClass, boolean needRemoveAll, Bundle data)
     {
         String fragTag = getFragmentTagOfClass(fragmentClass);
@@ -744,11 +690,6 @@ public class MultiFragmentManager extends GcFragment
             GcFragment frag = (GcFragment) this.mChildFragmentManager.findFragmentByTag(fragmentKey);
             Log.v(TAG, "    fragment = " + frag);
         }
-    }
-
-    public void setForceLandscape(boolean forceLandscape)
-    {
-        this.forceLandscape = forceLandscape;
     }
 
     @Override
