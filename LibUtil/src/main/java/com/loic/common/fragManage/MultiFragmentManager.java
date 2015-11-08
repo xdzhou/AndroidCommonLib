@@ -585,7 +585,7 @@ public class MultiFragmentManager extends GcFragment
     {
         if (this.fragmentKeys.contains(tag))
         {
-            Log.v(TAG, this+": hiding fragment with tag:"+tag);
+            Log.v(TAG, this + ": hiding fragment with tag:" + tag);
             GcFragment frag = (GcFragment) this.mChildFragmentManager.findFragmentByTag(tag);
             if ((frag != null) && !frag.isHidden())
             {
@@ -785,7 +785,7 @@ public class MultiFragmentManager extends GcFragment
         return consumed;
     }
 
-    
+    /*
     public boolean onOpenElement(MenuElementItem menuElementItem, int position)
     {
         if(menuElementItem != null && menuElementItem.fragmentClass != null && !fragmentClassInShowing.isAssignableFrom(menuElementItem.fragmentClass))
@@ -793,7 +793,8 @@ public class MultiFragmentManager extends GcFragment
             showGcFragment(menuElementItem.fragmentClass, true, null);
             return true;
         }
-            
+
         return false;
     }
+    */
 }

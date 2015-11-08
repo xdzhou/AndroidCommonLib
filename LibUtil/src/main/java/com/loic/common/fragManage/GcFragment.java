@@ -1,23 +1,29 @@
 package com.loic.common.fragManage;
 
-import com.gitonway.lee.niftymodaldialogeffects.lib.NiftyDialogBuilder;
 import com.loic.common.LibApplication;
 import com.loic.common.utils.R;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
 public class GcFragment extends Fragment 
 {
-    private NiftyDialogBuilder dialogShowing;
+    private AlertDialog mAlertDialog;
     private Resources mRes;
 
     protected int getLayoutResID()
@@ -46,7 +52,8 @@ public class GcFragment extends Fragment
         if(mRes == null)
         {
             rootView = inflater.inflate(getLayoutResID(), container, false);
-        } else
+        }
+        else
         {
             final XmlResourceParser parser = mRes.getLayout(getLayoutResID());
             try
@@ -59,13 +66,6 @@ public class GcFragment extends Fragment
         }
 
         return rootView;
-    }
-
-    @Override
-    public void onDestroyView()
-    {
-        super.onDestroyView();
-        hideDialog();
     }
 
     @Override
@@ -90,6 +90,11 @@ public class GcFragment extends Fragment
         return false;
     }
 
+    public boolean onMainMenuSelected(MenuItem menuItem)
+    {
+        return false;
+    }
+
     public MultiFragmentManager getMultiFragmentManager()
     {
         Fragment parentFrag = getParentFragment();
@@ -103,7 +108,7 @@ public class GcFragment extends Fragment
     public GcActivity getGcActivity()
     {
         Activity activity = getActivity();
-        if(activity != null && activity instanceof GcActivity)
+        if(activity instanceof GcActivity)
         {
             return (GcActivity) activity;
         }
@@ -128,60 +133,70 @@ public class GcFragment extends Fragment
     /******************************************************
      ********************* Dialog action ******************
      ******************************************************/
-    private View.OnClickListener cancelDialogListener = new View.OnClickListener()
+    protected DialogInterface.OnClickListener cancelDialogListener = new DialogInterface.OnClickListener()
     {
         @Override
-        public void onClick(View v)
+        public void onClick(DialogInterface dialog, int which)
         {
-            hideDialog();
+            dialog.dismiss();
         }
     };
 
     public void hideDialog()
     {
-        if(dialogShowing != null && dialogShowing.isShowing() && getActivity() != null)
+        if(mAlertDialog != null)
         {
-            getActivity().runOnUiThread(new Runnable()
+            mAlertDialog.dismiss();
+            mAlertDialog = null;
+        }
+    }
+
+    public void showDialog(@NonNull final AlertDialog.Builder builder)
+    {
+        Activity activity = getActivity();
+        if(activity != null &&  !activity.isFinishing())
+        {
+            activity.runOnUiThread(new Runnable()
             {
                 @Override
                 public void run()
                 {
-                    dialogShowing.dismiss();
+                    hideDialog();
+                    mAlertDialog = builder.create();
+                    mAlertDialog.show();
                 }
             });
         }
     }
 
-    protected int getInitDialogBackgroundColor()
+    public void showDialog(@NonNull String title, @Nullable String msg, @Nullable View customView)
     {
-        return -1;
+        if(msg != null || customView != null)
+        {
+            AlertDialog.Builder builder = new AlertDialog.Builder(LibApplication.getAppContext());
+            builder.setTitle(title);
+            if(msg != null)
+            {
+                builder.setMessage(msg);
+            }
+            if(customView != null)
+            {
+                builder.setView(customView);
+            }
+            builder.setPositiveButton(android.R.string.ok, cancelDialogListener);
+            showDialog(builder);
+        }
     }
 
-    private NiftyDialogBuilder initAlertDialog()
+    public void showDialog(@StringRes int titleRes, @StringRes int msgRes, @Nullable final View customView)
     {
-        NiftyDialogBuilder dialogBuilder = new NiftyDialogBuilder(getActivity(), R.style.dialog_untran);
-        int color = getInitDialogBackgroundColor();
-        if(color != -1)
-            dialogBuilder.withDialogColor(color);
-        return dialogBuilder;
+        Resources res = mRes == null ? LibApplication.getAppContext().getResources() : mRes;
+        showDialog(res.getString(titleRes), res.getString(msgRes), customView);
     }
 
-    public NiftyDialogBuilder createDialogBuilder(String title, String msg)
+    public void showDialog(@StringRes int titleRes, String msg, @Nullable final View customView)
     {
-        hideDialog();
-        dialogShowing = initAlertDialog();
-
-        return dialogShowing.withTitle(title).withMessage(msg).setCustomView(null, null);
-    }
-
-    public NiftyDialogBuilder createDialogBuilderWithCancel (String title, String msg)
-    {
-        hideDialog();
-        dialogShowing = initAlertDialog();
-
-        return dialogShowing.withTitle(title)
-        .withMessage(msg)
-        .withButton1Text(getString(android.R.string.cancel))
-        .setButton1Click(cancelDialogListener);
+        Resources res = mRes == null ? LibApplication.getAppContext().getResources() : mRes;
+        showDialog(res.getString(titleRes), msg, customView);
     }
 }
