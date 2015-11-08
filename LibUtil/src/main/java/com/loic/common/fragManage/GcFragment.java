@@ -171,9 +171,9 @@ public class GcFragment extends Fragment
 
     public void showDialog(@NonNull String title, @Nullable String msg, @Nullable View customView)
     {
-        if(msg != null || customView != null)
+        if(getActivity() != null && (msg != null || customView != null))
         {
-            AlertDialog.Builder builder = new AlertDialog.Builder(LibApplication.getAppContext());
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setTitle(title);
             if(msg != null)
             {
