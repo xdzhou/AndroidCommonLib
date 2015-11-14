@@ -10,7 +10,6 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.loic.common.LibApplication;
-import com.loic.common.utils.FileUtils;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -50,11 +49,11 @@ public class PluginManager
 
     private PluginManager()
     {
-        mContext = LibApplication.getAppContext();
+        mContext = LibApplication.getContext();
         //optimizedDirectory = mContext.getDir("dex", Context.MODE_PRIVATE).getAbsolutePath();
         //libraryPath = mContext.getDir("lib", Context.MODE_PRIVATE).getAbsolutePath();
         pluginApks = new HashMap<String, PluginApk>();
-        String[] packages = LibApplication.getAppContext().getPackageName().split(".");
+        String[] packages = LibApplication.getContext().getPackageName().split(".");
         setAppName(packages[packages.length - 1]);
     }
 

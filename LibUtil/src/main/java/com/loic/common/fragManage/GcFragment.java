@@ -15,7 +15,6 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -122,7 +121,7 @@ public class GcFragment extends Fragment
 
     protected Resources getMyResources()
     {
-        return (mRes != null) ? mRes : LibApplication.getAppContext().getResources();
+        return (mRes != null) ? mRes : LibApplication.getContext().getResources();
     }
 
     public int getFragID()
@@ -190,13 +189,13 @@ public class GcFragment extends Fragment
 
     public void showDialog(@StringRes int titleRes, @StringRes int msgRes, @Nullable final View customView)
     {
-        Resources res = mRes == null ? LibApplication.getAppContext().getResources() : mRes;
+        Resources res = mRes == null ? LibApplication.getContext().getResources() : mRes;
         showDialog(res.getString(titleRes), res.getString(msgRes), customView);
     }
 
     public void showDialog(@StringRes int titleRes, String msg, @Nullable final View customView)
     {
-        Resources res = mRes == null ? LibApplication.getAppContext().getResources() : mRes;
+        Resources res = mRes == null ? LibApplication.getContext().getResources() : mRes;
         showDialog(res.getString(titleRes), msg, customView);
     }
 }

@@ -17,7 +17,7 @@ public class CalendarManagerImpl extends CalendarManager
     {
         if(availableCalendarProviderMap == null)
         {
-            Cursor cur = LibApplication.getAppContext().getContentResolver().query(CalendarContract.Calendars.CONTENT_URI, null, null, null, null);
+            Cursor cur = LibApplication.getContext().getContentResolver().query(CalendarContract.Calendars.CONTENT_URI, null, null, null, null);
             availableCalendarProviderMap = new SparseArray<>(cur.getCount());
             for (cur.moveToFirst(); !cur.isAfterLast(); cur.moveToNext())
             {

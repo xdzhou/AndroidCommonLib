@@ -14,12 +14,12 @@ public class ToastUtils
 
     public static void show(int resId) 
     {
-        show(LibApplication.getAppContext().getResources().getText(resId), Toast.LENGTH_SHORT);
+        show(LibApplication.getContext().getResources().getText(resId), Toast.LENGTH_SHORT);
     }
 
     public static void show(int resId, int duration) 
     {
-        show(LibApplication.getAppContext().getResources().getText(resId), duration);
+        show(LibApplication.getContext().getResources().getText(resId), duration);
     }
 
     public static void show(CharSequence text) 
@@ -29,12 +29,12 @@ public class ToastUtils
 
     public static void show(CharSequence text, int duration)
     {
-        Toast.makeText(LibApplication.getAppContext(), text, duration).show();
+        Toast.makeText(LibApplication.getContext(), text, duration).show();
     }
 
     public static void show(int resId, Object... args) 
     {
-        show(String.format(LibApplication.getAppContext().getResources().getString(resId), args), Toast.LENGTH_SHORT);
+        show(String.format(LibApplication.getContext().getResources().getString(resId), args), Toast.LENGTH_SHORT);
     }
 
     public static void show(String format, Object... args) 
@@ -44,7 +44,7 @@ public class ToastUtils
 
     public static void show(int resId, int duration, Object... args) 
     {
-        show(String.format(LibApplication.getAppContext().getResources().getString(resId), args), duration);
+        show(String.format(LibApplication.getContext().getResources().getString(resId), args), duration);
     }
 
     public static void show(String format, int duration, Object... args) 

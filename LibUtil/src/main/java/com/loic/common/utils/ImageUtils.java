@@ -26,33 +26,33 @@ import android.util.Log;
 
 public class ImageUtils 
 {
-	private static final String TAG = ImageUtils.class.getSimpleName();
-	
-	public static boolean saveImage(Bitmap bitmap, String filePath)
-	{  
-		boolean retVal = false;
-		File file = new File(filePath);
-		if(!file.getParentFile().isDirectory())
-			file.getParentFile().mkdir();
-		try 
-		{
-			FileOutputStream fos = new FileOutputStream(file);
-			bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);// 把数据写入文件
-			retVal = true;
-			fos.close();
-		} 
-		catch (FileNotFoundException e) 
-		{
-			e.printStackTrace();
-		} 
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
-		return retVal;     
+    private static final String TAG = ImageUtils.class.getSimpleName();
+    
+    public static boolean saveImage(Bitmap bitmap, String filePath)
+    {  
+        boolean retVal = false;
+        File file = new File(filePath);
+        if(!file.getParentFile().isDirectory())
+            file.getParentFile().mkdir();
+        try 
+        {
+            FileOutputStream fos = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);// 把数据写入文件
+            retVal = true;
+            fos.close();
+        } 
+        catch (FileNotFoundException e) 
+        {
+            e.printStackTrace();
+        } 
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        return retVal;     
     }
-	
-	/** 
+    
+    /** 
      * 获得圆角图片的方法 
      *  
      * @param bitmap 
@@ -149,7 +149,7 @@ public class ImageUtils
     
     public static Bitmap getGreyImageByMatrix(Bitmap bitmap) 
     { 
-    	// 得到图片的长和宽  
+        // 得到图片的长和宽  
         int width = bitmap.getWidth();  
         int height = bitmap.getHeight();  
         // 创建目标灰度图像  
@@ -266,7 +266,7 @@ public class ImageUtils
     
     public static Bitmap getImageFromUrl(String url) 
     {  
-    	Bitmap image = null;
+        Bitmap image = null;
         try 
         {
             InputStream in = new java.net.URL(url).openStream();
@@ -288,15 +288,15 @@ public class ImageUtils
     */  
     public static Bitmap setImageAlpha(Bitmap sourceImg, int alpha) 
     {  
-	    int[] argb = new int[sourceImg.getWidth() * sourceImg.getHeight()];
-	    // 获得图片的ARGB值  
-	    sourceImg.getPixels(argb, 0, sourceImg.getWidth(), 0, 0,sourceImg.getWidth(), sourceImg.getHeight());	    
-	    alpha = alpha * 255 / 100;  
-	    for (int i = 0; i < argb.length; i++) 
-	    {  
-	    	argb[i] = (alpha << 24) | (argb[i] & 0x00FFFFFF);// 修改最高2位的值  
-	    }  
-	    sourceImg = Bitmap.createBitmap(argb, sourceImg.getWidth(), sourceImg.getHeight(), Config.ARGB_8888);  
-	    return sourceImg;  
+        int[] argb = new int[sourceImg.getWidth() * sourceImg.getHeight()];
+        // 获得图片的ARGB值  
+        sourceImg.getPixels(argb, 0, sourceImg.getWidth(), 0, 0,sourceImg.getWidth(), sourceImg.getHeight());        
+        alpha = alpha * 255 / 100;  
+        for (int i = 0; i < argb.length; i++) 
+        {  
+            argb[i] = (alpha << 24) | (argb[i] & 0x00FFFFFF);// 修改最高2位的值  
+        }  
+        sourceImg = Bitmap.createBitmap(argb, sourceImg.getWidth(), sourceImg.getHeight(), Config.ARGB_8888);  
+        return sourceImg;  
     } 
 }

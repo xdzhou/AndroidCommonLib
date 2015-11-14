@@ -26,7 +26,6 @@ import java.util.List;
  */
 public class ShellUtils 
 {
-	
     public static final String COMMAND_SU       = "su";
     public static final String COMMAND_SH       = "sh";
     public static final String COMMAND_EXIT     = "exit\n";

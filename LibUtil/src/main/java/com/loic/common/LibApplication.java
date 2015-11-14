@@ -15,7 +15,7 @@ public class LibApplication extends Application
         LibApplication.globalApplication = this;
     }
 
-    public static Context getAppContext()
+    public static Context getContext()
     {
         return LibApplication.context;
     }

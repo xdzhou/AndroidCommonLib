@@ -17,6 +17,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.view.ViewCompat;
 import android.text.Layout.Alignment;
@@ -37,12 +38,14 @@ import android.widget.Scroller;
 public class AgendaView extends View 
 {
     private static final String TAG = AgendaView.class.getSimpleName();
+
+    public static final int LAST_DAY_OF_MONTH = 111;
     
     private int startHour = 7;
     private int endHour = 21;
     private int dayNumPerPage = 5;
     private boolean showWeekend = false;
-    private Calendar today;
+    private final Calendar today = Calendar.getInstance();
     private Calendar originFirstDay;
     
     private int hourNumShown;
@@ -142,27 +145,12 @@ public class AgendaView extends View
         mScaleDetector = new ScaleGestureDetector(context, mScaleListener);
         flyingScroller = new Scroller(context);
         
-        initCalendar(new Date(), false);
+        initCalendar(Calendar.getInstance(), false);
     }
     
-    public void initCalendar(int year, int month, boolean resetLimitDis)
+    private void initCalendar(Calendar cal, boolean resetLimitDis)
     {
-        today = Calendar.getInstance();
-        
-        originFirstDay = (Calendar) today.clone();
-        originFirstDay.set(Calendar.YEAR, year);
-        originFirstDay.set(Calendar.MONTH, month);
-        
-        computerToMondayDis(resetLimitDis);
-    }
-    
-    public void initCalendar(Date baseDate, boolean resetLimitDis)
-    {
-        today = Calendar.getInstance();
-        
-        originFirstDay = (Calendar) today.clone();
-        originFirstDay.setTime(baseDate);
-        
+        originFirstDay = cal;
         computerToMondayDis(resetLimitDis);
     }
     
@@ -723,23 +711,41 @@ public class AgendaView extends View
      ******************************************************/
     public String refreshAgendaWithNewDate(int year, int month, boolean forceLoad)
     {
+        return refreshAgendaWithNewDate(year, month, 1, forceLoad);
+    }
+
+    public String refreshAgendaWithNewDate(int year, int month, int day, boolean forceLoad)
+    {
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.YEAR, year);
         cal.set(Calendar.MONTH, month);
-        return refreshAgendaWithNewDate(cal.getTime(), forceLoad);
+        if(day == LAST_DAY_OF_MONTH)
+        {
+            cal.set(Calendar.DAY_OF_MONTH, cal.getActualMaximum(Calendar.DAY_OF_MONTH));
+        }
+        else
+        {
+            cal.set(Calendar.DAY_OF_MONTH, day);
+        }
+        return refreshAgendaWithNewDate(cal, forceLoad);
     }
-    
-    public String refreshAgendaWithNewDate(Date newDate, boolean forceLoad)
+
+    public String refreshAgendaWithNewDate(Date date, boolean forceLoad)
     {
         Calendar cal = Calendar.getInstance();
-        cal.setTime(newDate);
+        cal.setTime(date);
+        return refreshAgendaWithNewDate(cal, forceLoad);
+    }
+    
+    public String refreshAgendaWithNewDate(@NonNull Calendar cal, boolean forceLoad)
+    {
         if(! forceLoad && cal.get(Calendar.YEAR) == originFirstDay.get(Calendar.YEAR) && cal.get(Calendar.MONTH) == originFirstDay.get(Calendar.MONTH))
         {
             scrollToDayOfMonth(cal.get(Calendar.DAY_OF_MONTH));
         }
         else 
         {
-            initCalendar(newDate, true);
+            initCalendar(cal, true);
             if(listener != null && listener.get() != null)
             {
                 resetEventMap(listener.get().onNeedNewEventList(originFirstDay.get(Calendar.YEAR), originFirstDay.get(Calendar.MONTH)));
@@ -753,11 +759,6 @@ public class AgendaView extends View
             invalidate();
         }
         return cal.get(Calendar.YEAR)+" "+dfs.getMonths()[cal.get(Calendar.MONTH)];
-    }
-    
-    public String refreshAgendaWithNewDate(Date newDate)
-    {
-        return refreshAgendaWithNewDate(newDate, false);
     }
     
     public void askForEvents()
@@ -836,7 +837,7 @@ public class AgendaView extends View
      ******************** Touch listener ******************
      ******************************************************/
     
-    public static interface AgendaViewEventTouchListener
+    public interface AgendaViewEventTouchListener
     {
         public void onEventClicked(AgendaEvent event, RectF rect);
         public void onEventLongPressed(AgendaEvent event, RectF rect);

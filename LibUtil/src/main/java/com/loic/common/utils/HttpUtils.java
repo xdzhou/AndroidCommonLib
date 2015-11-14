@@ -26,7 +26,7 @@ import android.util.Log;
 
 public class HttpUtils 
 {
-	private static final String TAG = HttpUtils.class.getSimpleName();
+    private static final String TAG = HttpUtils.class.getSimpleName();
     /** url and para separator **/
     public static final String URL_AND_PARA_SEPARATOR = "?";
     /** parameters separator **/
@@ -39,10 +39,10 @@ public class HttpUtils
 
     public static String httpGet(String url) throws FailException
     {
-    	String retVal = null;
+        String retVal = null;
         if(!url.isEmpty())
         {
-        	HttpClient client = new DefaultHttpClient();
+            HttpClient client = new DefaultHttpClient();
             HttpGet httpGet = new HttpGet(url);
             try {
                 HttpResponse response = client.execute(httpGet);
@@ -52,15 +52,15 @@ public class HttpUtils
                     HttpEntity entity = response.getEntity();
                     retVal = EntityUtils.toString(entity);
                 } else
-                	throw new FailException("Can't connect to the server, status:" + status+ " recevied.");
+                    throw new FailException("Can't connect to the server, status:" + status+ " recevied.");
                 httpGet.abort();
             } catch (UnsupportedEncodingException e) {
-            	throw new FailException(e.getMessage());
-    		} catch (ClientProtocolException e) {
-    			throw new FailException(e.getMessage());
-    		} catch (IOException e) {
-    			throw new FailException(e.getMessage());
-    		} finally {
+                throw new FailException(e.getMessage());
+            } catch (ClientProtocolException e) {
+                throw new FailException(e.getMessage());
+            } catch (IOException e) {
+                throw new FailException(e.getMessage());
+            } finally {
                 client.getConnectionManager().shutdown();
             }
         }
@@ -80,10 +80,10 @@ public class HttpUtils
      */
     public static String httpPost(String url, List<NameValuePair> data) throws FailException
     {
-    	String retVal = null;
+        String retVal = null;
         if(!url.isEmpty())
         {
-        	HttpClient client = new DefaultHttpClient();
+            HttpClient client = new DefaultHttpClient();
             HttpPost httpPost = new HttpPost(url);
             try 
             {
@@ -96,15 +96,15 @@ public class HttpUtils
                     retVal = EntityUtils.toString(entity);
                 }
                 else
-                	throw new FailException("Can't connect to the server, status:" + status+ " recevied.");
+                    throw new FailException("Can't connect to the server, status:" + status+ " recevied.");
                 httpPost.abort();
             } catch (UnsupportedEncodingException e) {
-            	throw new FailException(e.getMessage());
-    		} catch (ClientProtocolException e) {
-    			throw new FailException(e.getMessage());
-    		} catch (IOException e) {
-    			throw new FailException(e.getMessage());
-    		} finally {
+                throw new FailException(e.getMessage());
+            } catch (ClientProtocolException e) {
+                throw new FailException(e.getMessage());
+            } catch (IOException e) {
+                throw new FailException(e.getMessage());
+            } finally {
                 client.getConnectionManager().shutdown();
             }
         }
@@ -113,10 +113,10 @@ public class HttpUtils
     
     public static boolean httpDownloadFile(String url, String fileSavePath)
     {
-    	boolean retVal = false;
+        boolean retVal = false;
         if(!url.isEmpty() && !fileSavePath.isEmpty())
         {
-        	HttpClient client = new DefaultHttpClient();
+            HttpClient client = new DefaultHttpClient();
             HttpGet httpGet = new HttpGet(url);
             try {
                 HttpResponse response = client.execute(httpGet);
@@ -137,13 +137,13 @@ public class HttpUtils
                     retVal = true;
                 } 
                 else
-                	Log.e(TAG, "HttpResponse status NOT 200 , status = "+status);
+                    Log.e(TAG, "HttpResponse status NOT 200 , status = "+status);
                 httpGet.abort();
             } 
             catch (IOException e) 
             {
-            	Log.e(TAG, e.getMessage());
-    		}
+                Log.e(TAG, e.getMessage());
+            }
             finally 
             {
                 client.getConnectionManager().shutdown();

@@ -11,7 +11,7 @@ public class StringUtils
     {
         int unit = 1024;
         if (bytes < unit) 
-        	return bytes + " B";
+            return bytes + " B";
         int exp = (int) (Math.log(bytes) / Math.log(unit));
         String pre = "KMGTPE".charAt(exp-1) + "";
         return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
@@ -32,21 +32,21 @@ public class StringUtils
     
     public static boolean isInteger(String value) 
     {
-		try 
-		{
-			Integer.parseInt(value);
-			return true;
-		} 
-		catch (NumberFormatException e) 
-		{
-			return false;
-		}
-	}
+        try 
+        {
+            Integer.parseInt(value);
+            return true;
+        } 
+        catch (NumberFormatException e) 
+        {
+            return false;
+        }
+    }
     
     public static String toMD5(String source) 
     {
         if (null == source || "".equals(source)) 
-        	return null;
+            return null;
         try 
         {
             MessageDigest digest = java.security.MessageDigest.getInstance("MD5");
@@ -68,7 +68,7 @@ public class StringUtils
     public static String toHex(byte[] buf) 
     {
         if (buf == null) 
-        	return "";
+            return "";
         StringBuffer result = new StringBuffer(2 * buf.length);
         for (int i = 0; i < buf.length; i++) 
         {
