@@ -730,7 +730,7 @@ public class AgendaView extends View
         return refreshAgendaWithNewDate(cal, forceLoad);
     }
 
-    public String refreshAgendaWithNewDate(Date date, boolean forceLoad)
+    public String refreshAgendaWithNewDate(@NonNull Date date, boolean forceLoad)
     {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
@@ -759,15 +759,6 @@ public class AgendaView extends View
             invalidate();
         }
         return cal.get(Calendar.YEAR)+" "+dfs.getMonths()[cal.get(Calendar.MONTH)];
-    }
-    
-    public void askForEvents()
-    {
-        if(listener != null && listener.get() != null)
-        {
-            resetEventMap(listener.get().onNeedNewEventList(originFirstDay.get(Calendar.YEAR), originFirstDay.get(Calendar.MONTH)));
-            invalidate();
-        }
     }
     
     public int[] getAgendaYearMonth()
