@@ -5,10 +5,10 @@ import com.loic.common.utils.R;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
-import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
@@ -50,8 +50,12 @@ public abstract class GcActivity extends AppCompatActivity implements Navigation
         // set up the drawer's list view with items and click listener
 
         // enable ActionBar app icon to behave as action to toggle nav drawer
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeButtonEnabled(true);
+        ActionBar actionBar = getSupportActionBar();
+        if(actionBar != null)
+        {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setHomeButtonEnabled(true);
+        }
     }
 
     public GcFragment getCenterFragment()
@@ -163,5 +167,21 @@ public abstract class GcActivity extends AppCompatActivity implements Navigation
     public NavigationView getNavigationMenu()
     {
         return navigationMenu;
+    }
+
+    public void setActionBarVisible(boolean visible)
+    {
+        ActionBar actionBar = getSupportActionBar();
+        if(actionBar != null)
+        {
+            if(visible)
+            {
+                actionBar.show();
+            }
+            else
+            {
+                actionBar.hide();
+            }
+        }
     }
 }
