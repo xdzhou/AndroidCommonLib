@@ -1,5 +1,7 @@
 package com.loic.common.manager;
 
+import android.support.annotation.NonNull;
+
 import rx.Observable;
 import rx.functions.Func1;
 import rx.subjects.PublishSubject;
@@ -32,12 +34,12 @@ public class RxEventBus
         return instance;
     }
 
-    public static void post(Object event)
+    public static void post(@NonNull Object event)
     {
         RxEventBus.getInstance().bus.onNext(event);
     }
 
-    public static <T> Observable<T> toObserverable (final Class<T> eventType)
+    public static <T> Observable<T> toObserverable (@NonNull final Class<T> eventType)
     {
         return RxEventBus.getInstance().bus.filter(new Func1<Object, Boolean>()
         {

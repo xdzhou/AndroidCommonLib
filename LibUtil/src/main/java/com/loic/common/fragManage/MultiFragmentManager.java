@@ -3,7 +3,7 @@ package com.loic.common.fragManage;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.loic.common.utils.DeviceUtils;
+import com.loic.common.utils.AndroidUtils;
 import com.loic.common.utils.R;
 
 import android.os.Bundle;
@@ -105,7 +105,9 @@ public class MultiFragmentManager extends GcFragment
         outState.putStringArrayList(MFM_fragement_KeyList_Key, this.fragmentKeys);
         outState.putBoolean(MFM_Force_Landscape_Key, forceLandscape);
         if(fragmentClassInShowing != null)
+        {
             outState.putString(MFM_Fragment_Inshowing_Key, fragmentClassInShowing.getName());
+        }
     }
 
     /**
@@ -122,7 +124,7 @@ public class MultiFragmentManager extends GcFragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
-        View view = inflater.inflate(R.layout.multifragmentcontroller, container, false);
+        View view = super.onCreateView(inflater, container, savedInstanceState);
         //parent = container;
         parent = (FrameLayout) view.findViewById(R.id.mfc_relativelayout);
 
@@ -132,13 +134,13 @@ public class MultiFragmentManager extends GcFragment
         {
             this.forceLandscape = savedInstanceState.getBoolean(MFM_Force_Landscape_Key);
             this.fragmentKeys = savedInstanceState.getStringArrayList(MFM_fragement_KeyList_Key);
-            if (!this.forceLandscape || DeviceUtils.isLandscape())
+            if (!this.forceLandscape || AndroidUtils.isLandscape())
             {
                 refreshFragments();
             }
         }
 
-        if (this.forceLandscape && !DeviceUtils.isLandscape())
+        if (this.forceLandscape && ! AndroidUtils.isLandscape())
         {
             //Do not load fragment
         }
@@ -194,23 +196,22 @@ public class MultiFragmentManager extends GcFragment
      *            the class type of the fragment we are looking for
      * @return Fragment the fragment of the given type
      */
-    @SuppressWarnings("unchecked")
-    public <T> T getFragmentOfClass(Class<T> fragClass)
+    public GcFragment getFragmentOfClass(Class<? extends GcFragment> fragClass)
     {
-        T returnedFragment = null;
+        GcFragment returnedFragment = null;
         for (int i = 0; (returnedFragment == null) && (i < this.fragmentKeys.size()); ++i)
         {
             String fragmentKey = this.fragmentKeys.get(i);
             GcFragment frag = (GcFragment) this.mChildFragmentManager.findFragmentByTag(fragmentKey);
             if (fragClass.isInstance(frag))
             {
-                returnedFragment = (T) frag;
+                returnedFragment = frag;
             }
         }
         return returnedFragment;
     }
     
-    public <T> String getFragmentTagOfClass(Class<T> fragClass)
+    public String getFragmentTagOfClass(Class<? extends GcFragment> fragClass)
     {
         String tag = null;
         for (int i = 0; (tag == null) && (i < this.fragmentKeys.size()); ++i)
@@ -449,7 +450,6 @@ public class MultiFragmentManager extends GcFragment
                 {
                     Log.w(TAG, "Can't get fragment at position: [" + position + "] with Tag: [" + fragTag + "]");
                 }
-
             }
             else
             {

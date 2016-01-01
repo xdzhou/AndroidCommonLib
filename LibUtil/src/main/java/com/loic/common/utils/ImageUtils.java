@@ -283,7 +283,7 @@ public class ImageUtils
     /** 
     * 图片透明度处理 
     * @param sourceImg  原始图片 
-    * @param number 透明度 
+    * @param alpha 透明度
     * @return 
     */  
     public static Bitmap setImageAlpha(Bitmap sourceImg, int alpha) 

@@ -1,4 +1,4 @@
-package com.loic.common;
+package com.loic.common.manager;
 
 import android.support.annotation.NonNull;
 import android.support.v4.util.SimpleArrayMap;
@@ -60,7 +60,7 @@ public class AsyncProcessor
             }
         });
 
-        Future<?> oldFuture = null;
+        Future<?> oldFuture;
         synchronized (mRequestMap)
         {
             oldFuture =mRequestMap.put(token, newFuture);

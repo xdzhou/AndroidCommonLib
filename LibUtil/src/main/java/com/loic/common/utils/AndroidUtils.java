@@ -8,12 +8,14 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.wifi.WifiManager;
+import android.support.annotation.Nullable;
 import android.telephony.TelephonyManager;
 import android.util.TypedValue;
 import android.view.View;
@@ -69,26 +71,25 @@ public class AndroidUtils
     public static float dip2px(int dipValue) 
     {
         Resources r = LibApplication.getContext().getResources();
-        float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dipValue, r.getDisplayMetrics());
-        return px;
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dipValue, r.getDisplayMetrics());
     }
     
     /**
      * 得到当前应用的 版本名 Version Name
      */
-    public static String getVersionName()
+    public static @Nullable String getVersionName()
     {
-        String version_name = null;
+        String versionName = null;
         try 
         {
             PackageInfo pInfo = LibApplication.getContext().getPackageManager().getPackageInfo(LibApplication.getContext().getPackageName(), 0);
-            version_name = pInfo.versionName;
+            versionName = pInfo.versionName;
         } 
         catch (NameNotFoundException e) 
         {
             e.printStackTrace();
         }
-        return version_name;
+        return versionName;
     }
     
     /**
@@ -97,17 +98,17 @@ public class AndroidUtils
      */
     public static int getVersionCode()
     {
-        int version_code = -1;
+        int versionCode = -1;
         try 
         {
             PackageInfo pInfo = LibApplication.getContext().getPackageManager().getPackageInfo(LibApplication.getContext().getPackageName(), 0);
-            version_code = pInfo.versionCode;
+            versionCode = pInfo.versionCode;
         } 
         catch (NameNotFoundException e) 
         {
             e.printStackTrace();
         }
-        return version_code;
+        return versionCode;
     }
     
     /**
@@ -128,7 +129,7 @@ public class AndroidUtils
         String imei = null;
         try 
         {
-            TelephonyManager telephonyManager = (TelephonyManager) LibApplication.getContext().getSystemService(LibApplication.getContext().TELEPHONY_SERVICE);
+            TelephonyManager telephonyManager = (TelephonyManager) LibApplication.getContext().getSystemService(Context.TELEPHONY_SERVICE);
             imei = telephonyManager.getDeviceId();
         } 
         catch (Exception e) 
@@ -137,35 +138,15 @@ public class AndroidUtils
         }
         return imei;
     }
-    
-    public static String getImsi() 
+
+    public static boolean isLandscape()
     {
-        TelephonyManager tm = (TelephonyManager) LibApplication.getContext().getSystemService(Context.TELEPHONY_SERVICE);
-        return tm.getSubscriberId();
-    }
-    
-    public static String getSimSerialNumber() 
-    {
-        TelephonyManager tm = (TelephonyManager) LibApplication.getContext().getSystemService(Context.TELEPHONY_SERVICE);
-        return tm.getSimSerialNumber();
+        return LibApplication.getContext().getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
     }
 
-    /**
-     * 得到当前手机的 WIFI MAC
-     */
-    public static String getWifiMacAddress() 
+    public static boolean isLargeScreen()
     {
-        try 
-        {
-            WifiManager wifimanager = (WifiManager) LibApplication.getContext().getSystemService(Context.WIFI_SERVICE);
-            String mac = wifimanager.getConnectionInfo().getMacAddress();
-            if (mac.isEmpty()) 
-                return null;
-            return mac;
-        } 
-        catch (Exception e) 
-        {
-            return null;
-        }
+        int layout = LibApplication.getContext().getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK;
+        return layout == Configuration.SCREENLAYOUT_SIZE_XLARGE || layout == Configuration.SCREENLAYOUT_SIZE_LARGE;
     }
 }

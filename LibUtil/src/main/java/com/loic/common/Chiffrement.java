@@ -13,16 +13,15 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-public class Chiffrement {
+public class Chiffrement
+{
     // chiffrement les mots de passe
     public static String encrypt(String content, String cle) 
     {
         try 
         {
             SecretKeySpec key = new SecretKeySpec(getkeybyte(cle), "AES");
-            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");// create
-                                                                        // le
-                                                                        // crypteur
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");// create le crypteur
             IvParameterSpec iv = new IvParameterSpec("0102030405060708".getBytes());
             byte[] byteContent = content.getBytes("utf-8");
             cipher.init(Cipher.ENCRYPT_MODE, key, iv);// initiation
@@ -77,7 +76,8 @@ public class Chiffrement {
     {
         byte[] orignie = key.getBytes();
         byte[] keyByte = new byte[16];
-        for (int i = 0; i < 16; i++) {
+        for (int i = 0; i < 16; i++)
+        {
             keyByte[i] = orignie[i % orignie.length];
         }
         return keyByte;
@@ -103,8 +103,7 @@ public class Chiffrement {
     // Hex to Byte
     public static byte[] Hex2Byte(String hexStr) 
     {
-        if (hexStr.length() < 1)
-            return null;
+        if (hexStr.length() < 1) return null;
         byte[] result = new byte[hexStr.length() / 2];
         for (int i = 0; i < hexStr.length() / 2; i++) 
         {

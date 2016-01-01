@@ -97,21 +97,13 @@ public class GcFragment extends Fragment
     public MultiFragmentManager getMultiFragmentManager()
     {
         Fragment parentFrag = getParentFragment();
-        if(parentFrag != null && parentFrag instanceof MultiFragmentManager)
-        {
-            return (MultiFragmentManager) parentFrag;
-        }
-        return null;
+        return (parentFrag instanceof MultiFragmentManager) ? (MultiFragmentManager) parentFrag : null;
     }
 
     public GcActivity getGcActivity()
     {
         Activity activity = getActivity();
-        if(activity instanceof GcActivity)
-        {
-            return (GcActivity) activity;
-        }
-        return null;
+        return (activity instanceof GcActivity) ? (GcActivity) activity : null;
     }
 
     public void setPluginResource(Resources res)
@@ -122,11 +114,6 @@ public class GcFragment extends Fragment
     protected Resources getMyResources()
     {
         return (mRes != null) ? mRes : LibApplication.getContext().getResources();
-    }
-
-    public int getFragID()
-    {
-        return this.getClass().getName().hashCode();
     }
 
     /******************************************************
@@ -189,13 +176,13 @@ public class GcFragment extends Fragment
 
     public void showDialog(@StringRes int titleRes, @StringRes int msgRes, @Nullable final View customView)
     {
-        Resources res = mRes == null ? LibApplication.getContext().getResources() : mRes;
+        Resources res = getMyResources();
         showDialog(res.getString(titleRes), res.getString(msgRes), customView);
     }
 
     public void showDialog(@StringRes int titleRes, String msg, @Nullable final View customView)
     {
-        Resources res = mRes == null ? LibApplication.getContext().getResources() : mRes;
+        Resources res = getMyResources();
         showDialog(res.getString(titleRes), msg, customView);
     }
 }
